@@ -1,5 +1,5 @@
 <?php
-
+include_once "nav_bar.php";
 ?>
 
-<a href="/logout.php">Logout</a>
+HOLA

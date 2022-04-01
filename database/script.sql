@@ -414,7 +414,7 @@ END;
 
 -- -- actualizar_vehiculos_por_modelo -- --
 CREATE PROCEDURE
-actualizar_vehiculos_por_modelo(IN id_modelo INT)
+actualizar_vehiculos_por_modelo(IN v_id_modelo INT)
 BEGIN
     SET @capacidad_valor = get_precio_capacidad();
     SET @puerta_valor = get_precio_puerta();
@@ -433,7 +433,7 @@ BEGIN
         ),
         vehiculos.precio_dia = precio_semana / @multiplicador_semana
     WHERE
-        modelos_vehiculos.id = @id_modelo
+        modelos_vehiculos.id = v_id_modelo
         AND vehiculos.modelos_vehiculos_id = modelos_vehiculos.id;
 END;
 @@
@@ -486,8 +486,7 @@ DETERMINISTIC
 BEGIN
     SELECT id INTO @id_cliente FROM clientes WHERE clientes.correo = v_correo AND clientes.contrasena = v_password_hash;
     RETURN @id_cliente;
-END;
-@@
+END; @@
 
 CREATE PROCEDURE
 registrar_vehiculo(
@@ -505,7 +504,7 @@ registrar_vehiculo(
 BEGIN
     SET @id_modelo = get_modelo_id(v_modelo);
     SET @id_color = get_color_id(v_color);
-    IF (@id_color = NULL) THEN
+    IF (@id_color IS NULL) THEN
         INSERT INTO colores (nombre) VALUES (v_color);
         SET @id_color = get_color_id(v_color);
     END IF;

@@ -1,3 +1,7 @@
+<?php
+include_once "nav_bar.php";
+
+?>
 <!DOCTYPE html>
 <!-- Created By CodingNepal -->
 <html lang="en" dir="ltr">
@@ -17,7 +21,7 @@
          <div class="form-container">
             
             <div class="form-inner">
-               <form action="#" class="login">
+               <form class="login" method="post">
                   <div class="field">
                      <input type="text" placeholder="ID cliente" name="id_cliente" required>
                   </div>
