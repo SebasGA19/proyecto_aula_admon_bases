@@ -203,3 +203,17 @@ form .btn input[type="submit"]{
   color: white;
 }
 
+.blue-button {
+  text-decoration: none;
+  padding: 4px;
+  background: #87CEFA;
+  color: white;
+}
+
+.blue-button:hover {
+  text-decoration: none;
+  padding: 4px;
+  background: #4682B4;
+  color: white;
+}
+

@@ -21,6 +21,26 @@ function connect(): PDO
     return new PDO("mysql:host=$database_host;dbname=$database;", $database_username, $database_password);
 }
 
+function rent_vehicle(
+    int   $inventario_id,
+    int   $id_cliente,
+    float $numero_semanas,
+    float $numero_dias,
+): bool
+{
+    try {
+        $records = connect()->prepare('CALL alquilar_vehiculo(inventario_id, id_cliente, numero_semanas, numero_dias)');
+        $records->bindParam(':inventario_id', $inventario_id);
+        $records->bindParam(':id_cliente', $id_cliente);
+        $records->bindParam(':numero_semanas', $numero_semanas);
+        $records->bindParam(':numero_dias', $numero_dias);
+        $records->execute();
+        return true;
+    } catch (Exception $e) {
+    }
+    return false;
+}
+
 class Vehiculo
 {
     public ?int $inventario_id = null;

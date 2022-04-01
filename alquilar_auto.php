@@ -1,13 +1,21 @@
 <?php
 include_once "nav_bar.php";
+include_once "database.php";
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (rent_vehicle($_GET["id"], $_SESSION["id"], $_POST["numero_semanas"], $_POST["numero_dias"])) {
+        js_redirect("/vehiculos.php");
+    } else {
+        echo ":(";
+    }
+}
 ?>
 <!DOCTYPE html>
 <!-- Created By CodingNepal -->
 <html lang="en" dir="ltr">
    <head>
       <meta charset="utf-8">
-      <title>Login and Registration Form in HTML | CodingNepal</title>
+      <title>Alquilar vehiculo</title>
       <link rel="stylesheet" href="css/style.css">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
    </head>
@@ -23,22 +31,10 @@ include_once "nav_bar.php";
             <div class="form-inner">
                <form class="login" method="post">
                   <div class="field">
-                     <input type="text" placeholder="ID cliente" name="id_cliente" required>
+                     <input type="number" min="1" placeholder="Cantidad de semanas" name="numero_semanas" required>
                   </div>
                   <div class="field">
-                     <input type="text" placeholder="ID empleado" name="id_empleado" required>
-                  </div>
-                  <div class="field">
-                     <input type="text" placeholder="ID Sucursal" name="id_sucursal" required>
-                  </div>
-                  <div class="field">
-                     <input type="text" placeholder="ID Vehículo" name="id_vehiculo" required>
-                  </div>
-                  <div class="field">
-                     <input type="text" placeholder="Cantidad de semanas" name="numero_semanas" required>
-                  </div>
-                  <div class="field">
-                     <input type="text" placeholder="Cantidad de dias" name="numero_dias" required>
+                     <input type="number" min="0" placeholder="Cantidad de dias" name="numero_dias" required>
                   </div>
                   <div class="field btn">
                      <div class="btn-layer"></div>
