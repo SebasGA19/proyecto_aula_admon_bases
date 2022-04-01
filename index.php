@@ -1,3 +1,39 @@
+<?php
+include_once "database.php";
+
+session_start();
+
+if (isset($_SESSION["id"])) {
+    js_redirect("dashboard.php");
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST["login"])) {
+        $user_id = login($_POST["username"], $_POST["password"]);
+        if ($user_id !== null) {
+            $_SESSION["id"] = $user_id;
+            js_redirect("/dashboard.php");
+            exit();
+        }
+    } else if (isset($_POST["register"])) {
+        $user_id = register_client(
+            $_POST["ciudad_residencia"],
+            $_POST["cedula"],
+            $_POST["nombres"],
+            $_POST["apellidos"],
+            $_POST["direccion"],
+            $_POST["telefono"],
+            $_POST["correo"],
+            $_POST["contrasena"],
+            $_POST["confirm-password"]
+        );
+        if ($user_id) {
+            echo "Registration succeed";
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <!-- Created By CodingNepal -->
 <html lang="en" dir="ltr">
@@ -26,55 +62,54 @@
                <div class="slider-tab"></div>
             </div>
             <div class="form-inner">
-               <form action="#" class="login">
+               <form method="post" class="login">
                   <div class="field">
-                     <input type="text" placeholder="Correo" id="correo" required>
+                     <input type="email" placeholder="Correo" id="username" name="username" required>
                   </div>
                   <div class="field">
-                     <input type="password" placeholder="Password" required>
+                     <input type="password" placeholder="Password" name="password" required>
                   </div>
                   <div class="pass-link">
                      <a href="#">Forgot password?</a>
                   </div>
                   <div class="field btn">
                      <div class="btn-layer"></div>
-                     <input type="submit" value="Login">
+                     <input type="submit" value="Login" name="login">
                   </div>
                   <div class="signup-link">
                      Not a member? <a href="">Signup now</a>
                   </div>
                </form>
-               <form action="#" class="signup">
+               <form method="post" class="signup">
                   <div class="field">
-                     <input type="text" placeholder="Ciudad Residencia" id="ciudad_residencia" required >
+                     <input type="text" placeholder="Ciudad Residencia" name="ciudad_residencia" required >
+                  </div>
+                  <div class="field"><input type="text" placeholder="Cedula" name="cedula" required >
                   </div>
                   <div class="field">
-                     <input type="text" placeholder="Cedula" id ="cedula" required >
+                     <input type="text" placeholder="Nombres" name="nombres" required >
                   </div>
                   <div class="field">
-                     <input type="text" placeholder="Nombres" id ="nombres" required >
+                     <input type="text" placeholder="Apellidos" name="apellidos" required >
                   </div>
                   <div class="field">
-                     <input type="text" placeholder="Apellidos" id ="apellidos" required >
+                     <input type="text" placeholder="Direccion" name="direccion" required >
                   </div>
                   <div class="field">
-                     <input type="text" placeholder="Direccion" id ="direccion" required >
+                     <input type="text" placeholder="Telefono" name="telefono" required >
                   </div>
                   <div class="field">
-                     <input type="text" placeholder="Telefono" id ="telefono" required >
+                     <input type="email" placeholder="Correo" name="correo" required>
                   </div>
                   <div class="field">
-                     <input type="text" placeholder="Correo" id="correo" required>
+                     <input type="password" placeholder="Contraseña" name="contrasena" required>
                   </div>
                   <div class="field">
-                     <input type="password" placeholder="Contraseña" id="contrasena" required>
-                  </div>
-                  <div class="field">
-                     <input type="password" placeholder="Confirmar contraseña" required>
+                     <input type="password" placeholder="Confirmar contraseña" name="confirm-password" required>
                   </div>
                   <div class="field btn">
                      <div class="btn-layer"></div>
-                     <input type="submit" value="Signup">
+                     <input type="submit" value="Signup" name="register">
                   </div>
                </form>
             </div>

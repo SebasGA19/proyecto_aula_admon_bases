@@ -3,7 +3,7 @@ DROP DATABASE laboratorio_3;
 
 -- - Creacion de base de datos - --
 CREATE DATABASE laboratorio_3;
-CONNECT laboratorio_3;
+USE laboratorio_3;
 
 -- - Creacion de tablas - --
 
@@ -26,7 +26,7 @@ END; @@
 DELIMITER ;
 
 
-INSERT INTO colores (nombre) VALUES ("rojo"), ("amarillo"), ("gris"), ("negro"), ("blanco"), ("azul");
+INSERT INTO colores (nombre) VALUES ('rojo'), ('amarillo'), ('gris'), ('negro'), ('blanco'), ('azul');
 
 -- -- modelos_vehiculos -- --
 CREATE TABLE IF NOT EXISTS modelos_vehiculos (
@@ -51,9 +51,9 @@ INSERT INTO modelos_vehiculos (
     nombre,
     valor
 ) VALUES
-    ("sedan", 1),
-    ("camioneta", 2),
-    ("deportivo", 3);
+    ('sedan', 1),
+    ('camioneta', 2),
+    ('deportivo', 3);
 
 -- -- precio_capacidad_constante -- --
 CREATE TABLE IF NOT EXISTS precio_capacidad_constante (
@@ -150,27 +150,17 @@ DELIMITER ;
 
 INSERT INTO multiplicador_semana_consante (valor) VALUES (5);
 
--- -- ciudades -- --
-CREATE TABLE IF NOT EXISTS ciudades (
-    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(45) NOT NULL,
-    CONSTRAINT ciudades_ciudad_unica UNIQUE (nombre)
-);
-
-INSERT INTO ciudades (nombre) VALUES ("Bucaramanga"), ("Bogota"), ("Cartagena"), ("Caracas");
-
 -- -- empleados -- --
 CREATE TABLE IF NOT EXISTS empleados (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    ciudad_residencia INT NOT NULL,
+    ciudad_residencia VARCHAR(45),
     cedula VARCHAR(45) NOT NULL,
     nombres VARCHAR(255) NOT NULL,
     apellidos VARCHAR(255) NOT NULL,
     direccion VARCHAR(1000) NOT NULL,
     telefono_celular VARCHAR(45) NOT NULL,
     correo VARCHAR(255) NOT NULL,
-    CONSTRAINT empleados_cedula_unica UNIQUE (cedula),
-    CONSTRAINT fk_empleados_ciudad_residencia FOREIGN KEY (ciudad_residencia) REFERENCES ciudades(id)
+    CONSTRAINT empleados_cedula_unica UNIQUE (cedula)
 );
 
 INSERT INTO empleados (
@@ -184,70 +174,69 @@ INSERT INTO empleados (
 ) VALUE
 (
     1,
-    "1234567890",
-    "Antonio",
-    "Santana",
-    "Al lado del arbol",
     '1234567890',
-    "antonio@network.io"
+    'Antonio',
+    'Santana',
+    'Al lado del arbol',
+    '1234567890',
+    'antonio@network.io'
 ),
 (
     3,
-    "1234567891",
-    "Sebastian",
-    "Garcia",
-    "Al lado del arbol",
+    '1234567891',
+    'Sebastian',
+    'Garcia',
+    'Al lado del arbol',
     '1234567890',
-    "sebastian@network.io"
+    'sebastian@network.io'
 ),
 (
     2,
-    "1234567892",
-    "Camila",
-    "Torres",
-    "Al lado del arbol",
+    '1234567892',
+    'Camila',
+    'Torres',
+    'Al lado del arbol',
     '1234567890',
-    "camila@network.io"
+    'camila@network.io'
 );
 
 -- -- sucursales -- --
 CREATE TABLE IF NOT EXISTS sucursales (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    ciudades_id INT NOT NULL,
+    ciudad VARCHAR(45),
     direccion VARCHAR(1000) NOT NULL,
     telefono_fijo VARCHAR(45) NOT NULL,
     telefono_celular VARCHAR(45) NOT NULL,
-    correo VARCHAR(255) NOT NULL,
-    CONSTRAINT fk_sucursales_ciudades_id FOREIGN KEY (ciudades_id) REFERENCES ciudades(id)
+    correo VARCHAR(255) NOT NULL
 );
 
 INSERT INTO sucursales (
-    ciudades_id,
+    ciudad,
     direccion,
     telefono_fijo,
     telefono_celular,
     correo
 ) VALUES
 (
-        1,
-        "La cumbre",
-        "1234567890",
-        "1234567890",
-        "carro@motors.com"
+        'Bucaramanga',
+        'La cumbre',
+        '1234567890',
+        '1234567890',
+        'carro@motors.com'
 ),
 (
-        1,
-        "La otra cumbre",
-        "1234567890",
-        "1234567890",
-        "carro@motors.com"
+        'Cali',
+        'La otra cumbre',
+        '1234567890',
+        '1234567890',
+        'carro@motors.com'
 ),
 (
-        2,
-        "La otra cumbre pero en otro lugar",
-        "1234567890",
-        "1234567890",
-        "carro@motors.com"
+        'Bogota',
+        'La otra cumbre pero en otro lugar',
+        '1234567890',
+        '1234567890',
+        'carro@motors.com'
 );
 
 
@@ -284,7 +273,7 @@ CREATE TABLE IF NOT EXISTS inventario (
 -- -- clientes -- --
 CREATE TABLE IF NOT EXISTS clientes (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    ciudad_residencia INT NOT NULL,
+    ciudad_residencia VARCHAR(45),
     cedula VARCHAR(45) NOT NULL,
     nombres VARCHAR(255) NOT NULL,
     apellidos VARCHAR(255) NOT NULL,
@@ -292,8 +281,7 @@ CREATE TABLE IF NOT EXISTS clientes (
     telefono_celular VARCHAR(45) NOT NULL,
     correo VARCHAR(255) NOT NULL,
     contrasena VARCHAR(128) NOT NULL,
-    CONSTRAINT clientes_cedula_unica UNIQUE (cedula),
-    CONSTRAINT fk_clientes_ciudad_residencia FOREIGN KEY (ciudad_residencia) REFERENCES ciudades(id)
+    CONSTRAINT clientes_cedula_unica UNIQUE (cedula)
 );
 
 -- -- alquileres -- --
@@ -445,7 +433,7 @@ BEGIN
         ),
         vehiculos.precio_dia = precio_semana / @multiplicador_semana
     WHERE
-        modeloves_vehiculos.id = @id_modelo 
+        modelos_vehiculos.id = @id_modelo
         AND vehiculos.modelos_vehiculos_id = modelos_vehiculos.id;
 END;
 @@
@@ -454,7 +442,7 @@ END;
 
 CREATE PROCEDURE
 registrar_cliente(
-    IN v_ciudad_residencia INT,
+    IN v_ciudad_residencia VARCHAR(45),
     IN v_cedula VARCHAR(45),
     IN v_nombres VARCHAR(255),
     IN v_apellidos VARCHAR(255),
@@ -474,7 +462,7 @@ BEGIN
         correo,
         contrasena
     ) VALUES (
-        v_ciudad_residencia,
+        (v_ciudad_residencia),
         v_cedula,
         v_nombres,
         v_apellidos,
@@ -641,9 +629,9 @@ BEGIN
         SET
             alquileres.sucursal_entrega = v_sucursal_entrega,
             alquileres.fecha_llegada = @right_now,
-            alquilres.valor_pagado = v_valor_pagado
+            alquileres.valor_pagado = v_valor_pagado
         WHERE
-            alquilres.id = @id_alquiler;
+            alquileres.id = @id_alquiler;
     END IF;
 END; @@
 
@@ -691,38 +679,38 @@ DELIMITER ;
 -- - Datos de inicializacion - --
 
 CALL registrar_vehiculo(
-    "Nissan Versa 2016",
-    "sedan",
-    "rojo",
-    "SUB-527",
+    'Nissan Versa 2016',
+    'sedan',
+    'rojo',
+    'SUB-527',
     1000000,
     4,
     5,
     false,
-    "v8",
+    'v8',
     1
 );
 CALL registrar_vehiculo(
-    "Nissan Versa 2016",
-    "sedan",
-    "rojo",
-    "SUB-528",
+    'Nissan Versa 2016',
+    'sedan',
+    'rojo',
+    'SUB-528',
     1000000,
     4,
     5,
     false,
-    "v8",
+    'v8',
     1
 );
 CALL registrar_vehiculo(
-    "Nissan Versa 2020",
-    "sedan",
-    "rojo",
-    "SUB-529",
+    'Nissan Versa 2020',
+    'sedan',
+    'rojo',
+    'SUB-529',
     1000000,
     4,
     5,
     false,
-    "v8",
+    'v8',
     1
 );
