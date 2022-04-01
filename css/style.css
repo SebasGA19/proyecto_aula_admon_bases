@@ -10,10 +10,8 @@ html,body{
   height: 100%;
   width: 100%;
   place-items: center;
-  background: -webkit-linear-gradient(left, #58ddbc, #42fabd);
 }
 ::selection{
-  background: #a1ecc3;
   color: #fff;
 }
 .wrapper{
@@ -186,14 +184,14 @@ form .btn input[type="submit"]{
 
 .topnav {
   overflow: hidden;
-  background-color: rgb(113, 219, 212);
+  background-color: #1abc9c;
   position: absolute;
   top: 0px;
 }
 
 .topnav a {
   float: left;
-  color: #000000;
+  color: white;
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
@@ -201,7 +199,7 @@ form .btn input[type="submit"]{
 }
 
 .topnav a:hover {
-  background-color: #ddd;
-  color: black;
+  background-color: #16a085;
+  color: white;
 }
 
