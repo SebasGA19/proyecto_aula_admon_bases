@@ -1,7 +1,10 @@
 <?php
+include_once "database.php";
 if (isset($_SESSION["id"])) {
-    js_redirect("dashboard.php");
-    exit();
+    if (!exists($_SESSION["id"])) {
+        js_redirect("index.php");
+        exit();
+    }
 }
 ?>
 <!DOCTYPE html>

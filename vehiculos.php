@@ -30,6 +30,7 @@ include_once "database.php";
     <thead class="thead-dark">
         <tr>
             <th scope="col">Placa</th>
+            <th scope="col">Ciudad</th>
             <th scope="col">Modelo</th>
             <th scope="col">Nombre</th>
             <th scope="col">Color</th>
@@ -49,6 +50,7 @@ include_once "database.php";
         echo "
             <tr>
                 <td>$vehicle->placa</td>
+                <td>$vehicle->ciudad</td>
                 <td>$vehicle->modelo_id</td>
                 <td>$vehicle->nombre</td>
                 <td>$vehicle->color_id</td>

@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 function js_redirect(string $target_url)
 {
     echo "<script>window.location.href = '$target_url'</script>";
@@ -29,7 +31,7 @@ function rent_vehicle(
 ): bool
 {
     try {
-        $records = connect()->prepare('CALL alquilar_vehiculo(inventario_id, id_cliente, numero_semanas, numero_dias)');
+        $records = connect()->prepare('CALL alquilar_vehiculo(:inventario_id, :id_cliente, :numero_semanas, :numero_dias)');
         $records->bindParam(':inventario_id', $inventario_id);
         $records->bindParam(':id_cliente', $id_cliente);
         $records->bindParam(':numero_semanas', $numero_semanas);
@@ -37,6 +39,7 @@ function rent_vehicle(
         $records->execute();
         return true;
     } catch (Exception $e) {
+        echo $e;
     }
     return false;
 }
@@ -45,6 +48,7 @@ class Vehiculo
 {
     public ?int $inventario_id = null;
     public ?int $sucursales_id = null;
+    public ?string $ciudad = null;
     public ?int $vehiculos_id = null;
     public ?string $placa = null;
     public ?int $modelo_id = null;
@@ -61,6 +65,7 @@ class Vehiculo
     public function __construct(
         ?int    $inventario_id,
         ?int    $sucursales_id,
+        ?string $ciudad,
         ?int    $vehiculos_id,
         ?string $placa,
         ?int    $modelo_id,
@@ -77,6 +82,7 @@ class Vehiculo
     {
         $this->inventario_id = $inventario_id;
         $this->sucursales_id = $sucursales_id;
+        $this->ciudad = $ciudad;
         $this->vehiculos_id = $vehiculos_id;
         $this->placa = $placa;
         $this->modelo_id = $modelo_id;
@@ -99,6 +105,7 @@ function available_vehicles(): ?array
 SELECT
     inventario_id,
     sucursales_id,
+    ciudad,
     vehiculos_id,
     placa,
     modelo_id,
@@ -121,6 +128,7 @@ FROM
             $products[] = new Vehiculo(
                 $row["inventario_id"],
                 $row["sucursales_id"],
+                $row["ciudad"],
                 $row["vehiculos_id"],
                 $row["placa"],
                 $row["modelo_id"],
@@ -186,4 +194,15 @@ function login(string $username, string $password): ?int
         return $results["user_id"];
     }
     return null;
+}
+
+function exists(int $user_id): bool {
+    $records = connect()->prepare('SELECT id FROM clientes WHERE id = :user_id');
+    $records->bindParam(':user_id', $user_id);
+    $records->execute();
+    $results = $records->fetch(PDO::FETCH_ASSOC);
+    if ($results) {
+        return count($results) > 0;
+    }
+    return false;
 }

@@ -333,6 +333,7 @@ CREATE TABLE IF NOT EXISTS alquileres
 CREATE VIEW vehiculos_disponibles AS
 SELECT inventario.id                  AS inventario_id,
        inventario.sucursales_id       AS sucursales_id,
+       sucursales.ciudad              AS ciudad,
        inventario.vehiculos_id        AS vehiculos_id,
        inventario.placa               AS placa,
        vehiculos.modelos_vehiculos_id AS modelo_id,
@@ -346,9 +347,11 @@ SELECT inventario.id                  AS inventario_id,
        vehiculos.precio_semana        AS precio_semana,
        vehiculos.precio_dia           AS precio_dia
 FROM vehiculos,
-     inventario
+     inventario,
+     sucursales
 WHERE inventario.vehiculos_id = vehiculos.id
-  AND inventario.disponible;
+  AND inventario.disponible
+  AND inventario.sucursales_id = sucursales.id;
 
 CREATE VIEW historial_de_alquileres AS
 SELECT id,
@@ -701,7 +704,7 @@ CALL registrar_vehiculo(
         5,
         false,
         'v8',
-        1
+        2
     );
 CALL registrar_vehiculo(
         'Nissan Versa 2020',
@@ -713,5 +716,5 @@ CALL registrar_vehiculo(
         5,
         false,
         'v8',
-        1
+        3
     );
