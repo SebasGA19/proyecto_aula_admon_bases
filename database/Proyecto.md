@@ -1,4 +1,8 @@
-# Laboratorio 3
+# Proyecto de aula
+
+###### Sebastian David Gomez Acevedo - 000404384
+
+###### Juan Esteban Paez Albarracin - 000426959
 
 ###### Antonio Jose Donis Hung - 000408397
 
@@ -243,12 +247,13 @@ SELECT
 FROM
     alquileres
 WHERE
-    fecha_llegada != NULL;
+    fecha_llegada IS NOT NULL;
 ```
 
 ## Triggers
 
 ```sql
+DELIMITER @@
 -- -- modelos_vehiculos -- --
 
 CREATE TRIGGER modelos_vehiculos_after_update
@@ -293,6 +298,7 @@ DELIMITER ;
 
 ```sql
 DELIMITER @@
+
 CREATE FUNCTION get_color_id(color VARCHAR(45))
 RETURNS INT
 LANGUAGE SQL
@@ -301,6 +307,7 @@ BEGIN
     SELECT id INTO @result FROM colores WHERE nombre = color;
     RETURN @result;
 END; @@
+
 DELIMITER ;
 ```
 
@@ -308,6 +315,7 @@ DELIMITER ;
 
 ```sql
 DELIMITER @@
+
 CREATE FUNCTION get_modelo_id(modelo VARCHAR(45))
 RETURNS FLOAT
 LANGUAGE SQL
@@ -316,6 +324,7 @@ BEGIN
     SELECT id INTO @result FROM modelos_vehiculos WHERE nombre = modelo;
     RETURN @result;
 END; @@
+
 DELIMITER ;
 ```
 
@@ -323,6 +332,7 @@ DELIMITER ;
 
 ```sql
 DELIMITER @@
+
 CREATE FUNCTION get_precio_capacidad()
 RETURNS FLOAT
 LANGUAGE SQL
@@ -331,6 +341,7 @@ BEGIN
     SELECT valor INTO @result FROM precio_capacidad_constante WHERE id = 1;
     RETURN @result;
 END; @@
+
 DELIMITER ;
 ```
 
@@ -338,6 +349,7 @@ DELIMITER ;
 
 ```sql
 DELIMITER @@
+
 CREATE FUNCTION get_precio_puerta()
 RETURNS FLOAT
 LANGUAGE SQL
@@ -346,6 +358,7 @@ BEGIN
     SELECT valor INTO @result FROM precio_puerta_constante WHERE id = 1;
     RETURN @result;
 END; @@
+
 DELIMITER ;
 ```
 
@@ -353,6 +366,7 @@ DELIMITER ;
 
 ```sql
 DELIMITER @@
+
 CREATE FUNCTION get_impuesto()
 RETURNS FLOAT
 LANGUAGE SQL
@@ -361,6 +375,7 @@ BEGIN
     SELECT valor INTO @result FROM impuesto_constante WHERE id = 1;
     RETURN @result;
 END; @@
+
 DELIMITER ;
 ```
 
@@ -368,6 +383,7 @@ DELIMITER ;
 
 ```sql
 DELIMITER @@
+
 CREATE FUNCTION get_precio_descapotable()
 RETURNS FLOAT
 LANGUAGE SQL
@@ -376,6 +392,7 @@ BEGIN
     SELECT valor INTO @result FROM precio_descapotable_constante WHERE id = 1;
     RETURN @result;
 END; @@
+
 DELIMITER ;
 ```
 
@@ -383,6 +400,7 @@ DELIMITER ;
 
 ```sql
 DELIMITER @@
+
 CREATE FUNCTION get_multiplicador_semana()
 RETURNS FLOAT
 LANGUAGE SQL
@@ -391,12 +409,15 @@ BEGIN
     SELECT valor INTO @result FROM multiplicador_semana_consante WHERE id = 1;
     RETURN @result;
 END; @@
+
 DELIMITER ;
 ```
 
 ### Actualizar todos los vehiculos
 
 ```sql
+DELIMITER @@
+
 CREATE PROCEDURE
 actualizar_vehiculos()
 BEGIN
@@ -425,13 +446,16 @@ BEGIN
     WHERE
         vehiculos.modelos_vehiculos_id = modelos_vehiculos.id;
     
-END;
-@@
+END; @@
+
+DELIMITER ;
 ```
 
 ### Actualizar todos los vehiculos de un modelo
 
 ```sql
+DELIMITER @@
+
 CREATE PROCEDURE
 actualizar_vehiculos_por_modelo(IN id_modelo INT)
 BEGIN
@@ -454,13 +478,16 @@ BEGIN
     WHERE
         modeloves_vehiculos.id = @id_modelo 
         AND vehiculos.modelos_vehiculos_id = modelos_vehiculos.id;
-END;
-@@
+END; @@
+
+DELIMITER ;
 ```
 
 ### Registrar cliente
 
 ```sql
+DELIMITER @@
+
 CREATE PROCEDURE
 registrar_cliente(
     IN v_ciudad_residencia INT,
@@ -492,13 +519,16 @@ BEGIN
         v_correo,
         v_contrasena
     );
-END;
-@@
+END; @@
+
+DELIMITER ;
 ```
 
 ### Login cliente
 
 ```sql
+DELIMITER @@
+
 CREATE FUNCTION
 login_cliente(
     v_correo VARCHAR(255),
@@ -510,13 +540,16 @@ DETERMINISTIC
 BEGIN
     SELECT id INTO @id_cliente FROM clientes WHERE clientes.correo = v_correo AND clientes.contrasena = v_password_hash;
     RETURN @id_cliente;
-END;
-@@
+END; @@
+
+DELIMITER ;
 ```
 
 ### Registrar vehiculo
 
 ```sql
+DELIMITER @@
+
 CREATE PROCEDURE
 registrar_vehiculo(
     v_nombre VARCHAR(45),
@@ -583,13 +616,16 @@ BEGIN
             CALL actualizar_vehiculos();
         END IF;
     END IF;
-END;
-@@
+END; @@
+
+DELIMITER ;
 ```
 
 ### Alquilar vehiculo
 
 ```sql
+DELIMITER @@
+
 CREATE PROCEDURE alquilar_vehiculo(
     IN v_id_cliente INT,
     IN v_id_empleado INT,
@@ -631,6 +667,49 @@ BEGIN
         v_numero_dias,
         @semana_final * v_numero_semanas + @dia_final * v_numero_dias
     );
-END;
+END; @@
+
+DELIMITER ;
+```
+
+### Recuperar vehículo
+
+```sql
+DELIMITER @@
+
+CREATE PROCEDURE recuperar_vehiculo (
+    IN v_placa VARCHAR(45),
+    IN v_sucursal_entrega INT,
+    IN v_valor_pagado FLOAT
+)
+BEGIN
+    SELECT
+        inventario.id INTO @id_alquiler
+    FROM
+        alquileres,
+        inventario
+    WHERE
+        alquileres.inventario_id = inventario.id
+        AND inventario.placa = placa
+    LIMIT 1;
+    SET @right_now = NOW();
+    IF @id_alquiler IS NOT NULL THEN
+        UPDATE
+            inventario
+        SET
+            inventario.disponible = true
+        WHERE inventario.placa = v_placa;
+        UPDATE
+            alquileres
+        SET
+            alquileres.sucursal_entrega = v_sucursal_entrega,
+            alquileres.fecha_llegada = @right_now,
+            alquilres.valor_pagado = v_valor_pagado
+        WHERE
+            alquilres.id = @id_alquiler;
+    END IF;
+END; @@
+
+DELIMITER ;
 ```
 
