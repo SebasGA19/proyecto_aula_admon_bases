@@ -180,3 +180,28 @@ form .btn input[type="submit"]{
   font-weight: 500;
   cursor: pointer;
 }
+
+/* Nav-bar */
+
+
+.topnav {
+  overflow: hidden;
+  background-color: rgb(113, 219, 212);
+  position: absolute;
+  top: 0px;
+}
+
+.topnav a {
+  float: left;
+  color: #000000;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 24px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
