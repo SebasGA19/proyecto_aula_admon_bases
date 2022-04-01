@@ -13,7 +13,7 @@ html,body{
   background: -webkit-linear-gradient(left, #58ddbc, #42fabd);
 }
 ::selection{
-  background: #fa4299;
+  background: #a1ecc3;
   color: #fff;
 }
 .wrapper{
