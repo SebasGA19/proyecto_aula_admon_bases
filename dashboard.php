@@ -2,4 +2,4 @@
 include_once "nav_bar.php";
 ?>
 
-HOLA
+<h1>Bienvenido</h1>

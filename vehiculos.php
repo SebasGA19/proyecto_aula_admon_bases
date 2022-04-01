@@ -46,8 +46,10 @@ include_once "database.php";
     </thead>
     <tbody>
     <?php
-    foreach (available_vehicles() as $vehicle) {
-        echo "
+    $vehicles = available_vehicles();
+    if (count($vehicles) > 0) {
+        foreach ($vehicles as $vehicle) {
+            echo "
             <tr>
                 <td>$vehicle->placa</td>
                 <td>$vehicle->ciudad</td>
@@ -63,7 +65,9 @@ include_once "database.php";
                 <td>$vehicle->precio_dia</td>
                 <td><a href='/alquilar_auto.php?id=$vehicle->inventario_id' class='blue-button'>Alquilar</td>
             </tr>";
+        }
     }
     ?>
 
     </tbody>
+</table>

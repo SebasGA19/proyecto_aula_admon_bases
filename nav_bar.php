@@ -18,7 +18,7 @@ if (isset($_SESSION["id"])) {
 <div class="topnav">
     <a class="active" href="/dashboard.php">Home</a>
     <a href="/vehiculos.php">Ver autos disponibles</a>
-    <a href="#Historial de alquileres">Historial de alquileres</a>
+    <a href="/historial-alquileres.php">Historial de alquileres</a>
     <a href="/logout.php">Logout</a>
 </div>
 

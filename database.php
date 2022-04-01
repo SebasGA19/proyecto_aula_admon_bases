@@ -98,8 +98,194 @@ class Vehiculo
     }
 }
 
-function available_vehicles(): ?array
+class Rent
 {
+    public ?int $id = null;
+    public ?int $clientes_id = null;
+    public ?int $empleados_id = null;
+    public ?int $sucursal_salida = null;
+    public ?int $sucursal_entrega = null;
+    public ?int $inventario_id = null;
+    public ?string $nombre_vehiculo = null;
+    public ?string $fecha_salida = null;
+    public ?string $fecha_llegada_esperada = null;
+    public ?string $fecha_llegada = null;
+    public ?float $precio_semana_final = null;
+    public ?float $precio_dia_final = null;
+    public ?int $semanas_alquilado = null;
+    public ?float $dias_alquilado = null;
+    public ?float $valor_cotizado = null;
+    public ?float $valor_pagado = null;
+
+    public function __construct(
+        int    $id,
+        int    $clientes_id,
+        int    $empleados_id,
+        int    $sucursal_salida,
+        int    $sucursal_entrega,
+        int    $inventario_id,
+        string $nombre_vehiculo,
+        string $fecha_salida,
+        string $fecha_llegada_esperada,
+        string $fecha_llegada,
+        float  $precio_semana_final,
+        float  $precio_dia_final,
+        int    $semanas_alquilado,
+        float  $dias_alquilado,
+        float  $valor_cotizado,
+        float  $valor_pagado
+    )
+    {
+        $this->id = $id;
+        $this->clientes_id = $clientes_id;
+        $this->empleados_id = $empleados_id;
+        $this->sucursal_salida = $sucursal_salida;
+        $this->sucursal_entrega = $sucursal_entrega;
+        $this->inventario_id = $inventario_id;
+        $this->nombre_vehiculo = $nombre_vehiculo;
+        $this->fecha_salida = $fecha_salida;
+        $this->fecha_llegada_esperada = $fecha_llegada_esperada;
+        $this->fecha_llegada = $fecha_llegada;
+        $this->precio_semana_final = $precio_semana_final;
+        $this->precio_dia_final = $precio_dia_final;
+        $this->semanas_alquilado = $semanas_alquilado;
+        $this->dias_alquilado = $dias_alquilado;
+        $this->valor_cotizado = $valor_cotizado;
+        $this->valor_pagado = $valor_pagado;
+    }
+}
+
+function get_sucursal_city(int $id): ?string
+{
+    $records = connect()->prepare('SELECT ciudad FROM sucursales WHERE id = :id');
+    $records->bindParam(':id', $id);
+    $records->execute();
+    $results = $records->fetch(PDO::FETCH_ASSOC);
+    if (count($results) > 0) {
+        return $results["ciudad"];
+    }
+    return null;
+}
+
+function current_rents(int $user_id): array
+{
+    $products = array();
+    try {
+        $records = connect()->prepare('
+SELECT alquileres.id AS id,
+       clientes_id,
+       empleados_id,
+       sucursal_salida,
+       sucursal_entrega,
+       inventario_id,
+       vehiculos.nombre AS nombre_vehiculo,
+       fecha_salida,
+       fecha_llegada_esperada,
+       fecha_llegada,
+       precio_semana_final,
+       precio_dia_final,
+       semanas_alquilado,
+       dias_alquilado,
+       valor_cotizado,
+       valor_pagado
+FROM alquileres,
+     vehiculos,
+     inventario
+WHERE
+    fecha_llegada IS NULL
+    AND inventario.id = alquileres.inventario_id
+    AND vehiculos.id = inventario.vehiculos_id
+    AND clientes_id = :user_id');
+        $records->bindParam(":user_id", $user_id);
+        $records->execute();
+        while ($row = $records->fetch(PDO::FETCH_ASSOC)) {
+            if (count($row) === 0) {
+                break;
+            }
+            $products[] = new Rent(
+                $row["id"],
+                $row["clientes_id"],
+                $row["empleados_id"],
+                $row["sucursal_salida"],
+                -1,
+                $row["inventario_id"],
+                $row["nombre_vehiculo"],
+                $row["fecha_salida"],
+                $row["fecha_llegada_esperada"],
+                "NUNCA",
+                $row["precio_semana_final"],
+                $row["precio_dia_final"],
+                $row["semanas_alquilado"],
+                $row["dias_alquilado"],
+                $row["valor_cotizado"],
+                0,
+            );
+        }
+    } catch (Exception $e) {
+    }
+    return $products;
+}
+
+function old_rents(int $user_id): array
+{
+    $products = array();
+    try {
+        $records = connect()->prepare('
+SELECT
+    id,
+    clientes_id,
+    empleados_id,
+    sucursal_salida,
+    sucursal_entrega,
+    sucursal_entrega,
+    inventario_id,
+    nombre_vehiculo,
+    fecha_salida,
+    fecha_llegada_esperada,
+    fecha_llegada,
+    precio_semana_final,
+    precio_dia_final,
+    semanas_alquilado,
+    dias_alquilado,
+    valor_cotizado,
+    valor_pagado
+FROM
+    historial_de_alquileres
+WHERE
+      clientes_id = :user_id');
+        $records->bindParam(":user_id", $user_id);
+        $records->execute();
+        while ($row = $records->fetch(PDO::FETCH_ASSOC)) {
+            if (count($row) === 0) {
+                break;
+            }
+            $products[] = new Rent(
+                $row["id"],
+                $row["clientes_id"],
+                $row["empleados_id"],
+                $row["sucursal_salida"],
+                $row["sucursal_entrega"],
+                $row["inventario_id"],
+                $row["nombre_vehiculo"],
+                $row["fecha_salida"],
+                $row["fecha_llegada_esperada"],
+                $row["fecha_llegada"],
+                $row["precio_semana_final"],
+                $row["precio_dia_final"],
+                $row["semanas_alquilado"],
+                $row["dias_alquilado"],
+                $row["valor_cotizado"],
+                $row["valor_pagado"]
+            );
+        }
+    } catch (Exception $e) {
+    }
+    return $products;
+}
+
+function available_vehicles(): array
+{
+    $products = array();
     try {
         $records = connect()->prepare('
 SELECT
@@ -143,10 +329,9 @@ FROM
                 $row["precio_dia"]
             );
         }
-        return $products;
     } catch (Exception $e) {
     }
-    return null;
+    return $products;
 }
 
 function register_client(
@@ -196,7 +381,8 @@ function login(string $username, string $password): ?int
     return null;
 }
 
-function exists(int $user_id): bool {
+function exists(int $user_id): bool
+{
     $records = connect()->prepare('SELECT id FROM clientes WHERE id = :user_id');
     $records->bindParam(':user_id', $user_id);
     $records->execute();

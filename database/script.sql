@@ -354,12 +354,13 @@ WHERE inventario.vehiculos_id = vehiculos.id
   AND inventario.sucursales_id = sucursales.id;
 
 CREATE VIEW historial_de_alquileres AS
-SELECT id,
+SELECT alquileres.id AS id,
        clientes_id,
        empleados_id,
        sucursal_salida,
        sucursal_entrega,
        inventario_id,
+       vehiculos.nombre AS nombre_vehiculo,
        fecha_salida,
        fecha_llegada_esperada,
        fecha_llegada,
@@ -369,8 +370,13 @@ SELECT id,
        dias_alquilado,
        valor_cotizado,
        valor_pagado
-FROM alquileres
-WHERE fecha_llegada IS NOT NULL;
+FROM alquileres,
+     vehiculos,
+     inventario
+WHERE
+    fecha_llegada IS NOT NULL
+    AND inventario.id = alquileres.inventario_id
+    AND vehiculos.id = inventario.vehiculos_id;
 
 /*
 SELECT
@@ -574,7 +580,7 @@ BEGIN
            sucursales_id
     INTO @id_inventario, @semana_final, @dia_final, @id_sucursal
     FROM vehiculos_disponibles
-    WHERE vehiculos_id = v_inventario_id
+    WHERE vehiculos_disponibles.inventario_id = v_inventario_id
     LIMIT 1;
     INSERT INTO alquileres (clientes_id,
                             empleados_id,
@@ -608,12 +614,14 @@ CREATE PROCEDURE recuperar_vehiculo(
     IN v_valor_pagado FLOAT
 )
 BEGIN
-    SELECT inventario.id
+    SELECT alquileres.id
     INTO @id_alquiler
     FROM alquileres,
          inventario
-    WHERE alquileres.inventario_id = inventario.id
-      AND inventario.placa = placa
+    WHERE
+      alquileres.inventario_id = inventario.id
+      AND inventario.placa = v_placa
+      AND alquileres.fecha_llegada IS NULL
     LIMIT 1;
     SET @right_now = NOW();
     IF @id_alquiler IS NOT NULL THEN
