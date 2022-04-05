@@ -369,7 +369,8 @@ SELECT alquileres.id AS id,
        semanas_alquilado,
        dias_alquilado,
        valor_cotizado,
-       valor_pagado
+       valor_pagado,
+       placa
 FROM alquileres,
      vehiculos,
      inventario

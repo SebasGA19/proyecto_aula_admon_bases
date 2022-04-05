@@ -40,6 +40,7 @@ include_once "database.php";
         <th scope="col">Dias alquilado</th>
         <th scope="col">Semanas alquilado</th>
         <th scope="col">Precio cotizado</th>
+        <th scope="col">Placa</th>
     </tr>
     </thead>
     <tbody>
@@ -56,6 +57,7 @@ include_once "database.php";
                 <td>$rent->dias_alquilado</td>
                 <td>$rent->semanas_alquilado</td>
                 <td>$rent->valor_cotizado</td>
+                <td>$rent->placa</td>
             </tr>";
         }
     }
@@ -76,6 +78,7 @@ include_once "database.php";
         <th scope="col">Dias alquilado</th>
         <th scope="col">Semanas alquilado</th>
         <th scope="col">Precio total pagado</th>
+        <th scope="col">Placa</th>
     </tr>
     </thead>
     <tbody>
@@ -95,6 +98,7 @@ include_once "database.php";
                 <td>$rent->dias_alquilado</td>
                 <td>$rent->semanas_alquilado</td>
                 <td>$rent->valor_pagado</td>
+                <td>$rent->placa</td>
             </tr>";
         }
     }

@@ -15,10 +15,10 @@ function salt(): string
 
 function connect(): PDO
 {
-    $database_host = "172.30.242.24:3306";
-    $database = "laboratorio_3";
-    $database_username = "root";
-    $database_password = "password";
+    $database_host = getenv("HOST");
+    $database = getenv("DATABASE");
+    $database_username = getenv("DB-USERNAME");
+    $database_password = getenv("DB-PASSWORD");
 
     return new PDO("mysql:host=$database_host;dbname=$database;", $database_username, $database_password);
 }
@@ -116,6 +116,7 @@ class Rent
     public ?float $dias_alquilado = null;
     public ?float $valor_cotizado = null;
     public ?float $valor_pagado = null;
+    public ?string $placa = null;
 
     public function __construct(
         int    $id,
@@ -133,7 +134,8 @@ class Rent
         int    $semanas_alquilado,
         float  $dias_alquilado,
         float  $valor_cotizado,
-        float  $valor_pagado
+        float  $valor_pagado,
+        string $placa
     )
     {
         $this->id = $id;
@@ -152,6 +154,7 @@ class Rent
         $this->dias_alquilado = $dias_alquilado;
         $this->valor_cotizado = $valor_cotizado;
         $this->valor_pagado = $valor_pagado;
+        $this->placa = $placa;
     }
 }
 
@@ -187,7 +190,8 @@ SELECT alquileres.id AS id,
        semanas_alquilado,
        dias_alquilado,
        valor_cotizado,
-       valor_pagado
+       valor_pagado,
+       placa
 FROM alquileres,
      vehiculos,
      inventario
@@ -219,6 +223,7 @@ WHERE
                 $row["dias_alquilado"],
                 $row["valor_cotizado"],
                 0,
+                $row["placa"],
             );
         }
     } catch (Exception $e) {
@@ -248,7 +253,8 @@ SELECT
     semanas_alquilado,
     dias_alquilado,
     valor_cotizado,
-    valor_pagado
+    valor_pagado,
+    placa
 FROM
     historial_de_alquileres
 WHERE
@@ -275,7 +281,8 @@ WHERE
                 $row["semanas_alquilado"],
                 $row["dias_alquilado"],
                 $row["valor_cotizado"],
-                $row["valor_pagado"]
+                $row["valor_pagado"],
+                $row["placa"],
             );
         }
     } catch (Exception $e) {
