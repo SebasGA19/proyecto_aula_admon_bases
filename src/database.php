@@ -1,10 +1,8 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 session_start();
 
-#[NoReturn] function js_redirect(string $target_url)
+function js_redirect(string $target_url)
 {
     echo "<script>window.location.href = '$target_url'</script>";
     exit;
