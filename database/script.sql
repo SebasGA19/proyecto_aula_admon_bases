@@ -1,728 +1,590 @@
--- - Limpiar - --
-DROP DATABASE laboratorio_3;
+DROP DATABASE upb_rental;
+CREATE DATABASE upb_rental;
+USE upb_rental;
 
--- - Creacion de base de datos - --
-CREATE DATABASE laboratorio_3;
-USE laboratorio_3;
-
--- - Creacion de tablas - --
-
--- -- colores -- --
-CREATE TABLE IF NOT EXISTS colores
+-- -- Employees -- --
+CREATE TABLE IF NOT EXISTS employees
 (
-    id     INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(45),
-    CONSTRAINT colores_color_unico UNIQUE (nombre)
+    id                 INT           NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    personal_id        VARCHAR(45)   NOT NULL,
+    complete_name      VARCHAR(255)  NOT NULL,
+    address            VARCHAR(1000) NOT NULL,
+    phone_number       VARCHAR(45)   NOT NULL,
+    email              VARCHAR(255)  NOT NULL,
+    last_time_modified DATETIME      NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_employees_personal_id UNIQUE (personal_id),
+    CONSTRAINT unique_employees_email UNIQUE (email)
 );
 
 DELIMITER @@
-CREATE FUNCTION get_color_id(color VARCHAR(45))
-    RETURNS INT
-    LANGUAGE SQL
-    DETERMINISTIC
+CREATE TRIGGER before_update_employees
+    BEFORE UPDATE
+    ON employees
+    FOR EACH ROW
 BEGIN
-    SELECT id INTO @result FROM colores WHERE nombre = color;
-    RETURN @result;
+    SET NEW.last_time_modified = NOW();
 END;
 @@
 DELIMITER ;
 
-
-INSERT INTO colores (nombre)
-VALUES ('rojo'),
-       ('amarillo'),
-       ('gris'),
-       ('negro'),
-       ('blanco'),
-       ('azul');
-
--- -- modelos_vehiculos -- --
-CREATE TABLE IF NOT EXISTS modelos_vehiculos
-(
-    id     INT         NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(45) NOT NULL,
-    valor  FLOAT       NOT NULL,
-    CONSTRAINT modelos_vehiculos_modelo_unico UNIQUE (nombre)
-);
-
-DELIMITER @@
-CREATE FUNCTION get_modelo_id(modelo VARCHAR(45))
-    RETURNS FLOAT
-    LANGUAGE SQL
-    DETERMINISTIC
-BEGIN
-    SELECT id INTO @result FROM modelos_vehiculos WHERE nombre = modelo;
-    RETURN @result;
-END;
-@@
-DELIMITER ;
-
-INSERT INTO modelos_vehiculos (nombre,
-                               valor)
-VALUES ('sedan', 1),
-       ('camioneta', 2),
-       ('deportivo', 3);
-
--- -- precio_capacidad_constante -- --
-CREATE TABLE IF NOT EXISTS precio_capacidad_constante
-(
-    id    INT   NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    valor FLOAT NOT NULL
-);
-
-DELIMITER @@
-CREATE FUNCTION get_precio_capacidad()
-    RETURNS FLOAT
-    LANGUAGE SQL
-    DETERMINISTIC
-BEGIN
-    SELECT valor INTO @result FROM precio_capacidad_constante WHERE id = 1;
-    RETURN @result;
-END;
-@@
-DELIMITER ;
-
-INSERT INTO precio_capacidad_constante (valor)
-VALUES (100000);
-
--- -- precio_puerta_constante -- --
-CREATE TABLE IF NOT EXISTS precio_puerta_constante
-(
-    id    INT   NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    valor FLOAT NOT NULL
-);
-
-DELIMITER @@
-CREATE FUNCTION get_precio_puerta()
-    RETURNS FLOAT
-    LANGUAGE SQL
-    DETERMINISTIC
-BEGIN
-    SELECT valor INTO @result FROM precio_puerta_constante WHERE id = 1;
-    RETURN @result;
-END;
-@@
-DELIMITER ;
-
-INSERT INTO precio_puerta_constante (valor)
-VALUES (100000);
-
--- -- impuesto_constante -- --
-CREATE TABLE IF NOT EXISTS impuesto_constante
-(
-    id    INT   NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    valor FLOAT NOT NULL
-);
-
-DELIMITER @@
-CREATE FUNCTION get_impuesto()
-    RETURNS FLOAT
-    LANGUAGE SQL
-    DETERMINISTIC
-BEGIN
-    SELECT valor INTO @result FROM impuesto_constante WHERE id = 1;
-    RETURN @result;
-END;
-@@
-DELIMITER ;
-
-INSERT INTO impuesto_constante (valor)
-VALUES (19);
-
--- -- precio_descapotable_constante -- -- 
-CREATE TABLE IF NOT EXISTS precio_descapotable_constante
-(
-    id    INT   NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    valor FLOAT NOT NULL
-);
-
-DELIMITER @@
-CREATE FUNCTION get_precio_descapotable()
-    RETURNS FLOAT
-    LANGUAGE SQL
-    DETERMINISTIC
-BEGIN
-    SELECT valor INTO @result FROM precio_descapotable_constante WHERE id = 1;
-    RETURN @result;
-END;
-@@
-DELIMITER ;
-
-INSERT INTO precio_descapotable_constante (valor)
-VALUES (10000);
-
--- -- multiplicador_semana_consante -- --
-CREATE TABLE IF NOT EXISTS multiplicador_semana_consante
-(
-    id    INT   NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    valor FLOAT NOT NULL
-);
-
-DELIMITER @@
-CREATE FUNCTION get_multiplicador_semana()
-    RETURNS FLOAT
-    LANGUAGE SQL
-    DETERMINISTIC
-BEGIN
-    SELECT valor INTO @result FROM multiplicador_semana_consante WHERE id = 1;
-    RETURN @result;
-END;
-@@
-DELIMITER ;
-
-INSERT INTO multiplicador_semana_consante (valor)
-VALUES (5);
-
--- -- empleados -- --
-CREATE TABLE IF NOT EXISTS empleados
-(
-    id                INT           NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    ciudad_residencia VARCHAR(45),
-    cedula            VARCHAR(45)   NOT NULL,
-    nombres           VARCHAR(255)  NOT NULL,
-    apellidos         VARCHAR(255)  NOT NULL,
-    direccion         VARCHAR(1000) NOT NULL,
-    telefono_celular  VARCHAR(45)   NOT NULL,
-    correo            VARCHAR(255)  NOT NULL,
-    CONSTRAINT empleados_cedula_unica UNIQUE (cedula)
-);
-
-INSERT INTO empleados (ciudad_residencia,
-                       cedula,
-                       nombres,
-                       apellidos,
-                       direccion,
-                       telefono_celular,
-                       correo) VALUE
+INSERT INTO employees (personal_id,
+                       complete_name,
+                       address,
+                       phone_number,
+                       email) VALUE
     (
-     1,
      '1234567890',
-     'Antonio',
-     'Santana',
+     'Antonio Santana',
      'Al lado del arbol',
      '1234567890',
      'antonio@network.io'
         ),
     (
-     3,
      '1234567891',
-     'Sebastian',
-     'Garcia',
+     'Sebastian Garcia',
      'Al lado del arbol',
      '1234567890',
      'sebastian@network.io'
         ),
     (
-     2,
      '1234567892',
-     'Camila',
-     'Torres',
+     'Camila Torres',
      'Al lado del arbol',
      '1234567890',
      'camila@network.io'
         );
 
--- -- sucursales -- --
-CREATE TABLE IF NOT EXISTS sucursales
+-- -- Offices -- --
+CREATE TABLE IF NOT EXISTS offices
 (
-    id               INT           NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    ciudad           VARCHAR(45),
-    direccion        VARCHAR(1000) NOT NULL,
-    telefono_fijo    VARCHAR(45)   NOT NULL,
-    telefono_celular VARCHAR(45)   NOT NULL,
-    correo           VARCHAR(255)  NOT NULL
+    id                 INT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    city               VARCHAR(50)  NOT NULL,
+    address            VARCHAR(500) NOT NULL,
+    phone_number       VARCHAR(45)  NOT NULL,
+    email              VARCHAR(255) NOT NULL,
+    last_time_modified DATETIME     NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_office_city_address UNIQUE (city, address)
 );
 
-INSERT INTO sucursales (ciudad,
-                        direccion,
-                        telefono_fijo,
-                        telefono_celular,
-                        correo)
+DELIMITER @@
+CREATE TRIGGER before_update_offices
+    BEFORE UPDATE
+    ON offices
+    FOR EACH ROW
+BEGIN
+    SET NEW.last_time_modified = NOW();
+END;
+@@
+DELIMITER ;
+
+INSERT INTO offices (city,
+                     address,
+                     phone_number,
+                     email)
 VALUES ('Bucaramanga',
         'La cumbre',
-        '1234567890',
         '1234567890',
         'carro@motors.com'),
        ('Cali',
         'La otra cumbre',
         '1234567890',
-        '1234567890',
         'carro@motors.com'),
        ('Bogota',
+        'La nevera',
+        '1234567890',
+        'carro@motors.com'),
+       ('Medellin',
         'La otra cumbre pero en otro lugar',
         '1234567890',
+        'carro@motors.com'),
+       ('Cartagena',
+        'La playa',
         '1234567890',
         'carro@motors.com');
 
 
--- -- vehiculos -- --
-CREATE TABLE IF NOT EXISTS vehiculos
+-- -- Vehicles -- --
+CREATE TABLE IF NOT EXISTS vehicles
 (
-    id                   INT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    modelos_vehiculos_id INT          NOT NULL,
-    nombre               VARCHAR(45)  NOT NULL,
-    colores_id           INT          NOT NULL,
-    precio_referencia    FLOAT        NOT NULL,
-    puertas              INT          NOT NULL,
-    capacidad            INT          NOT NULL,
-    es_descapotable      BOOLEAN      NOT NULL,
-    motor                VARCHAR(500) NOT NULL,
-    precio_semana        FLOAT,
-    precio_dia           FLOAT,
-    CONSTRAINT vehiculos_vehiculo_unico UNIQUE (nombre, modelos_vehiculos_id, colores_id, precio_referencia, puertas,
-                                                capacidad, es_descapotable, motor),
-    CONSTRAINT fk_vehiculos_modelos_vehiculos_id FOREIGN KEY (modelos_vehiculos_id) REFERENCES modelos_vehiculos (id),
-    CONSTRAINT fk_vehiculos_colores_id FOREIGN KEY (colores_id) REFERENCES colores (id)
+    id                 INT          NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    model              VARCHAR(50)  NOT NULL,
+    type               VARCHAR(50)  NOT NULL,
+    color              VARCHAR(50)  NOT NULL,
+    doors              INT          NOT NULL,
+    capacity           INT          NOT NULL,
+    convertible        BOOLEAN      NOT NULL,
+    motor              VARCHAR(500) NOT NULL,
+    day_price          INT          NOT NULL,
+    week_price         INT          NOT NULL,
+    last_time_modified DATETIME     NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_vehicle UNIQUE (
+                                      model,
+                                      type,
+                                      color,
+                                      doors,
+                                      capacity,
+                                      convertible,
+                                      motor
+        )
 );
 
--- --inventario -- --
-CREATE TABLE IF NOT EXISTS inventario
+DELIMITER @@
+CREATE TRIGGER before_update_vehicles
+    BEFORE UPDATE
+    ON vehicles
+    FOR EACH ROW
+BEGIN
+    SET NEW.last_time_modified = NOW();
+END;
+@@
+DELIMITER ;
+
+-- -- Inventory -- --
+CREATE TABLE IF NOT EXISTS inventory
 (
-    id            INT         NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    sucursales_id INT         NOT NULL,
-    vehiculos_id  INT         NOT NULL,
-    placa         VARCHAR(45) NOT NULL,
-    disponible    BOOLEAN     NOT NULL DEFAULT true,
-    CONSTRAINT inventario_placa_unica UNIQUE (placa),
-    CONSTRAINT fk_inventario_sucursales_id FOREIGN KEY (sucursales_id) REFERENCES sucursales (id),
-    CONSTRAINT fk_inventario_vehiculos_id FOREIGN KEY (vehiculos_id) REFERENCES vehiculos (id)
+    id                 INT         NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    offices_id         INT         NOT NULL,
+    vehicles_id        INT         NOT NULL,
+    plate              VARCHAR(45) NOT NULL,
+    available          BOOLEAN     NOT NULL DEFAULT true,
+    last_time_modified DATETIME    NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_inventory_vehicle UNIQUE (plate),
+    CONSTRAINT fk_inventory_office_id_refs_offices_id FOREIGN KEY (offices_id) REFERENCES offices (id),
+    CONSTRAINT fk_inventory_vehicle_id_refs_vehicles_id FOREIGN KEY (vehicles_id) REFERENCES vehicles (id)
 );
 
--- -- clientes -- --
-CREATE TABLE IF NOT EXISTS clientes
+DELIMITER @@
+CREATE TRIGGER before_update_inventory
+    BEFORE UPDATE
+    ON inventory
+    FOR EACH ROW
+BEGIN
+    SET NEW.last_time_modified = NOW();
+END;
+@@
+DELIMITER ;
+
+-- -- Clients -- --
+CREATE TABLE IF NOT EXISTS clients
 (
-    id                INT           NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    ciudad_residencia VARCHAR(45),
-    cedula            VARCHAR(45)   NOT NULL,
-    nombres           VARCHAR(255)  NOT NULL,
-    apellidos         VARCHAR(255)  NOT NULL,
-    direccion         VARCHAR(1000) NOT NULL,
-    telefono_celular  VARCHAR(45)   NOT NULL,
-    correo            VARCHAR(255)  NOT NULL,
-    contrasena        VARCHAR(128)  NOT NULL,
-    CONSTRAINT clientes_cedula_unica UNIQUE (cedula)
+    id                 INT           NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    personal_id        VARCHAR(45)   NOT NULL,
+    complete_name      VARCHAR(500)  NOT NULL,
+    address            VARCHAR(1000) NOT NULL,
+    phone_number       VARCHAR(45)   NOT NULL,
+    email              VARCHAR(255)  NOT NULL,
+    password_hash      VARCHAR(128)  NOT NULL,
+    password_salt      varchar(500)  NOT NULL,
+    last_time_modified DATETIME      NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_clients_personal_id UNIQUE (personal_id),
+    CONSTRAINT unique_clients_email UNIQUE (email)
 );
 
--- -- alquileres -- --
-CREATE TABLE IF NOT EXISTS alquileres
+DELIMITER @@
+CREATE TRIGGER before_update_clients
+    BEFORE UPDATE
+    ON clients
+    FOR EACH ROW
+BEGIN
+    SET NEW.last_time_modified = NOW();
+END;
+@@
+DELIMITER ;
+
+-- -- Vehicle rents -- --
+CREATE TABLE IF NOT EXISTS vehicle_rents
 (
-    id                     INT      NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    clientes_id            INT      NOT NULL,
-    empleados_id           INT      NOT NULL,
-    sucursal_salida        INT      NOT NULL,
-    sucursal_entrega       INT,
-    inventario_id          INT      NOT NULL,
-    fecha_salida           DATETIME NOT NULL,
-    fecha_llegada_esperada DATETIME NOT NULL,
-    fecha_llegada          DATETIME,
-    precio_semana_final    FLOAT    NOT NULL,
-    precio_dia_final       FLOAT    NOT NULL,
-    semanas_alquilado      INT      NOT NULL,
-    dias_alquilado         INT      NOT NULL,
-    valor_cotizado         FLOAT,
-    valor_pagado           FLOAT,
-    CONSTRAINT fk_alquileres_clientes_id FOREIGN KEY (clientes_id) REFERENCES clientes (id),
-    CONSTRAINT fk_alquileres_empleados_id FOREIGN KEY (empleados_id) REFERENCES empleados (id),
-    CONSTRAINT fk_alquileres_sucursal_salida FOREIGN KEY (sucursal_salida) REFERENCES sucursales (id),
-    CONSTRAINT fk_alquileres_sucursal_entrega FOREIGN KEY (sucursal_entrega) REFERENCES sucursales (id),
-    CONSTRAINT fk_alquileres_inventario_id FOREIGN KEY (inventario_id) REFERENCES inventario (id)
-
+    id                 INT      NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    clients_id         INT      NOT NULL,
+    employees_id       INT      NOT NULL,
+    out_office         INT      NOT NULL,
+    in_office          INT,
+    inventory_id       INT      NOT NULL,
+    out_date           DATETIME NOT NULL,
+    expected_in_date   DATETIME NOT NULL,
+    in_date            DATETIME,
+    final_day_price    INT      NOT NULL,
+    final_week_price   INT      NOT NULL,
+    days_rented        INT      NOT NULL,
+    weeks_rented       INT      NOT NULL,
+    expected_price     INT,
+    payed_price        INT,
+    last_time_modified DATETIME NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_vehicle_rents_clients_id FOREIGN KEY (clients_id) REFERENCES clients (id),
+    CONSTRAINT fk_vehicle_rents_employees_id FOREIGN KEY (employees_id) REFERENCES employees (id),
+    CONSTRAINT fk_vehicle_rents_out_office FOREIGN KEY (out_office) REFERENCES offices (id),
+    CONSTRAINT fk_vehicle_rents_in_office FOREIGN KEY (in_office) REFERENCES offices (id),
+    CONSTRAINT fk_vehicle_rents_inventory_id FOREIGN KEY (inventory_id) REFERENCES inventory (id),
+    CONSTRAINT min_rent_days_and_weeks CHECK (days_rented > 0 OR weeks_rented > 0)
 );
-
--- -- Creacion de vistas -- --
-CREATE VIEW vehiculos_disponibles AS
-SELECT inventario.id                  AS inventario_id,
-       inventario.sucursales_id       AS sucursales_id,
-       sucursales.ciudad              AS ciudad,
-       inventario.vehiculos_id        AS vehiculos_id,
-       inventario.placa               AS placa,
-       vehiculos.modelos_vehiculos_id AS modelo_id,
-       vehiculos.nombre               AS nombre,
-       vehiculos.colores_id           AS color_id,
-       vehiculos.precio_referencia    AS precio_referencia,
-       vehiculos.puertas              AS puertas,
-       vehiculos.capacidad            AS capacidad,
-       vehiculos.es_descapotable      AS descapotable,
-       vehiculos.motor                AS motor,
-       vehiculos.precio_semana        AS precio_semana,
-       vehiculos.precio_dia           AS precio_dia
-FROM vehiculos,
-     inventario,
-     sucursales
-WHERE inventario.vehiculos_id = vehiculos.id
-  AND inventario.disponible
-  AND inventario.sucursales_id = sucursales.id;
-
-CREATE VIEW historial_de_alquileres AS
-SELECT alquileres.id AS id,
-       clientes_id,
-       empleados_id,
-       sucursal_salida,
-       sucursal_entrega,
-       inventario_id,
-       vehiculos.nombre AS nombre_vehiculo,
-       fecha_salida,
-       fecha_llegada_esperada,
-       fecha_llegada,
-       precio_semana_final,
-       precio_dia_final,
-       semanas_alquilado,
-       dias_alquilado,
-       valor_cotizado,
-       valor_pagado
-FROM alquileres,
-     vehiculos,
-     inventario
-WHERE
-    fecha_llegada IS NOT NULL
-    AND inventario.id = alquileres.inventario_id
-    AND vehiculos.id = inventario.vehiculos_id;
-
-/*
-SELECT
-    id,
-    clientes_id,
-    empleados_id,
-    sucursal_salida,
-    sucursal_entrega,
-    inventario_id,
-    fecha_salida,
-    fecha_llegada_esperada,
-    fecha_llegada,
-    precio_semana_final,
-    precio_dia_final,
-    semanas_alquilado,
-    dias_alquilado,
-    valor_cotizado,
-    valor_pagado
-FROM
-    alquileres
-WHERE
-    alquileres.clientes_id = :id_client;
-*/
 
 DELIMITER @@
 
--- - Creacion de proceos y funciones - --
--- -- Actualizar vehiculos - --
-CREATE PROCEDURE
-    actualizar_vehiculos()
+CREATE TRIGGER before_update_vehicle_rents
+    BEFORE UPDATE
+    ON vehicle_rents
+    FOR EACH ROW
 BEGIN
-    SET @capacidad_valor = get_precio_capacidad();
-    SET @puerta_valor = get_precio_puerta();
-    SET @impuesto_valor = get_impuesto();
-    SET @descapotable_precio = get_precio_descapotable();
-    SET @multiplicador_semana = get_multiplicador_semana();
-    UPDATE
-        vehiculos,
-        modelos_vehiculos
-    SET vehiculos.precio_semana = @impuesto_valor * (
-            (vehiculos.precio_referencia + modelos_vehiculos.valor) +
-            (vehiculos.capacidad + @capacidad_valor) +
-            (vehiculos.puertas * @puerta_valor) +
-            (vehiculos.es_descapotable * @descapotable_precio)
-        )
-    WHERE vehiculos.modelos_vehiculos_id = modelos_vehiculos.id;
-    UPDATE
-        vehiculos,
-        modelos_vehiculos
-    SET vehiculos.precio_dia = precio_semana / @multiplicador_semana
-    WHERE vehiculos.modelos_vehiculos_id = modelos_vehiculos.id;
-
+    SET NEW.last_time_modified = NOW();
 END;
 @@
 
--- -- actualizar_vehiculos_por_modelo -- --
-CREATE PROCEDURE
-    actualizar_vehiculos_por_modelo(IN v_id_modelo INT)
+CREATE TRIGGER after_insert_vehicle_rent
+    AFTER INSERT
+    ON vehicle_rents
+    FOR EACH ROW
 BEGIN
-    SET @capacidad_valor = get_precio_capacidad();
-    SET @puerta_valor = get_precio_puerta();
-    SET @impuesto_valor = get_impuesto();
-    SET @descapotable_precio = get_precio_descapotable();
-    SET @multiplicador_semana = get_multiplicador_semana();
-    UPDATE
-        vehiculos,
-        modelos_vehiculos
-    SET vehiculos.precio_semana = @impuesto_valor * (
-            (vehiculos.precio_referencia + modelos_vehiculos.valor) +
-            (vehiculos.capacidad + @capacidad_valor) +
-            (vehiculos.puertas * @puerta_valor) +
-            (vehiculos.es_descapotable * @descapotable_precio)
-        ),
-        vehiculos.precio_dia    = precio_semana / @multiplicador_semana
-    WHERE modelos_vehiculos.id = v_id_modelo
-      AND vehiculos.modelos_vehiculos_id = modelos_vehiculos.id;
+    UPDATE inventory
+    SET inventory.available = false
+    WHERE inventory.vehicles_id = NEW.inventory_id;
 END;
 @@
+
+CREATE TRIGGER after_update_vehicle_rent
+    AFTER UPDATE
+    ON vehicle_rents
+    FOR EACH ROW
+BEGIN
+    IF OLD.in_date IS NULL AND NEW.in_date IS NOT NULL THEN
+        UPDATE inventory
+        SET inventory.available = true
+        WHERE inventory.vehicles_id = NEW.inventory_id;
+    END IF;
+END;
+@@
+
+DELIMITER ;
+
+-- -- Views -- --
+CREATE VIEW available_vehicles AS
+SELECT inventory.id          AS inventory_id,
+       inventory.offices_id  AS office_id,
+       offices.city          AS city,
+       inventory.vehicles_id AS vehicle_id,
+       inventory.plate       AS plate,
+       vehicles.model        AS model,
+       vehicles.type         AS type,
+       vehicles.color        AS color,
+       vehicles.doors        AS doors,
+       vehicles.capacity     AS capacity,
+       vehicles.convertible  AS convertible,
+       vehicles.motor        AS motor,
+       vehicles.day_price    AS day_price,
+       vehicles.week_price   AS week_price
+FROM vehicles,
+     inventory,
+     offices
+WHERE inventory.vehicles_id = vehicles.id
+  AND inventory.available
+  AND inventory.offices_id = offices.id;
+
+CREATE VIEW completed_rents AS
+SELECT vehicle_rents.id               AS id,
+       vehicle_rents.clients_id       AS clients_id,
+       vehicle_rents.employees_id     AS employees_id,
+       vehicle_rents.out_office       AS out_office,
+       vehicle_rents.in_office        AS in_office,
+       vehicle_rents.inventory_id     AS inventory_id,
+       vehicles.type                  AS type,
+       vehicle_rents.out_date         AS out_date,
+       vehicle_rents.expected_in_date AS expected_in_date,
+       vehicle_rents.in_date          AS in_date,
+       vehicle_rents.final_day_price  AS final_day_price,
+       vehicle_rents.final_week_price AS final_week_price,
+       vehicle_rents.days_rented      AS days_rented,
+       vehicle_rents.weeks_rented     AS weeks_rented,
+       vehicle_rents.expected_price   AS expected_price,
+       vehicle_rents.payed_price      AS payed_price
+FROM vehicle_rents,
+     vehicles,
+     inventory
+WHERE vehicle_rents.in_date IS NOT NULL
+  AND inventory.id = vehicle_rents.inventory_id
+  AND vehicles.id = inventory.vehicles_id;
+
+DELIMITER @@
 
 -- -- Registrar cliente -- --
 
+CREATE FUNCTION
+    salt()
+    RETURNS VARCHAR(500)
+    LANGUAGE SQL
+    DETERMINISTIC
+BEGIN
+    SELECT LEFT(UUID(), 500) INTO @salt_result;
+    return @salt_result;
+END;
+@@
+
 CREATE PROCEDURE
-    registrar_cliente(
-    IN v_ciudad_residencia VARCHAR(45),
-    IN v_cedula VARCHAR(45),
-    IN v_nombres VARCHAR(255),
-    IN v_apellidos VARCHAR(255),
-    IN v_direccion VARCHAR(1000),
-    IN v_telefono_celular VARCHAR(45),
-    IN v_correo VARCHAR(255),
-    IN v_contrasena VARCHAR(128)
+    register_client(
+    v_personal_id VARCHAR(45),
+    v_complete_name VARCHAR(500),
+    v_address VARCHAR(1000),
+    v_phone_number VARCHAR(45),
+    v_email VARCHAR(255),
+    v_password VARCHAR(128)
 )
 BEGIN
-    INSERT IGNORE INTO clientes (ciudad_residencia,
-                                 cedula,
-                                 nombres,
-                                 apellidos,
-                                 direccion,
-                                 telefono_celular,
-                                 correo,
-                                 contrasena)
-    VALUES ((v_ciudad_residencia),
-            v_cedula,
-            v_nombres,
-            v_apellidos,
-            v_direccion,
-            v_telefono_celular,
-            v_correo,
-            v_contrasena);
+    SET @password_salt = salt();
+    INSERT IGNORE INTO clients (personal_id,
+                                complete_name,
+                                address,
+                                phone_number,
+                                email,
+                                password_hash,
+                                password_salt)
+    VALUES (v_personal_id,
+            v_complete_name,
+            v_address,
+            v_phone_number,
+            v_email,
+            ENCRYPT(v_password, @password_salt),
+            @password_salt);
 END;
 @@
 
 
 CREATE FUNCTION
-    login_cliente(
-    v_correo VARCHAR(255),
-    v_password_hash VARCHAR(128)
+    client_login(
+    v_email VARCHAR(255),
+    v_password VARCHAR(500)
 )
     RETURNS INT
     LANGUAGE SQL
     DETERMINISTIC
 BEGIN
-    SELECT id INTO @id_cliente FROM clientes WHERE clientes.correo = v_correo AND clientes.contrasena = v_password_hash;
+    SELECT password_salt INTO @password_salt FROM clients WHERE email = v_email LIMIT 1;
+    IF @password_salt IS NULL THEN
+        RETURN NULL;
+    END IF;
+    SELECT id
+    INTO @id_cliente
+    FROM clients
+    WHERE clients.email = v_email
+      AND clients.password_hash = ENCRYPT(v_password, @password_salt)
+    LIMIT 1;
     RETURN @id_cliente;
 END;
 @@
 
 CREATE PROCEDURE
-    registrar_vehiculo(
-    v_nombre VARCHAR(45),
-    v_modelo VARCHAR(45),
-    v_color VARCHAR(45),
-    v_placa VARCHAR(45),
-    v_precio_referencia FLOAT,
-    v_puertas INT,
-    v_capacidad INT,
-    v_es_descapotable BOOLEAN,
+    register_vehicle(
+    v_model VARCHAR(50),
+    v_type VARCHAR(50),
+    v_color VARCHAR(50),
+    v_doors INT,
+    v_capacity INT,
+    v_convertible BOOLEAN,
     v_motor VARCHAR(500),
-    v_id_sucursal INT
+    v_day_price INT,
+    v_week_price INT,
+    v_office_id INT,
+    v_plate VARCHAR(50)
 )
 BEGIN
-    SET @id_modelo = get_modelo_id(v_modelo);
-    SET @id_color = get_color_id(v_color);
-    IF (@id_color IS NULL) THEN
-        INSERT INTO colores (nombre) VALUES (v_color);
-        SET @id_color = get_color_id(v_color);
-    END IF;
-    IF @id_modelo > 0 THEN
-        INSERT IGNORE INTO vehiculos (modelos_vehiculos_id,
-                                      nombre,
-                                      colores_id,
-                                      precio_referencia,
-                                      puertas,
-                                      capacidad,
-                                      es_descapotable,
-                                      motor)
-        VALUES (@id_modelo,
-                v_nombre,
-                @id_color,
-                v_precio_referencia,
-                v_puertas,
-                v_capacidad,
-                v_es_descapotable,
-                v_motor);
-        SELECT id
-        INTO @id_vehiculo
-        FROM vehiculos
-        WHERE modelos_vehiculos_id = @id_modelo
-          AND nombre = v_nombre
-          AND colores_id = @id_color
-          AND precio_referencia = v_precio_referencia
-          AND puertas = v_puertas
-          AND capacidad = v_capacidad
-          AND es_descapotable = v_es_descapotable
-          AND motor = v_motor;
-        IF @id_vehiculo > 0 THEN
-            INSERT INTO inventario (sucursales_id,
-                                    vehiculos_id,
-                                    placa)
-            VALUES (v_id_sucursal,
-                    @id_vehiculo,
-                    v_placa);
-            CALL actualizar_vehiculos();
-        END IF;
-    END IF;
-END;
-@@
+    INSERT IGNORE INTO vehicles (model,
+                                 type,
+                                 color,
+                                 doors,
+                                 capacity,
+                                 convertible,
+                                 motor,
+                                 day_price,
+                                 week_price)
+    VALUES (v_model,
+            v_type,
+            v_color,
+            v_doors,
+            v_capacity,
+            v_convertible,
+            v_motor,
+            v_day_price,
+            v_week_price);
 
-CREATE PROCEDURE alquilar_vehiculo(
-    IN v_inventario_id INT,
-    IN v_id_cliente INT,
-    IN v_numero_semanas INT,
-    IN v_numero_dias INT
-)
-BEGIN
-    SET @ahora = NOW();
-    SELECT empleados.id INTO @id_empleado FROM empleados ORDER BY RAND() LIMIT 1;
-    SELECT inventario_id,
-           precio_semana,
-           precio_dia,
-           sucursales_id
-    INTO @id_inventario, @semana_final, @dia_final, @id_sucursal
-    FROM vehiculos_disponibles
-    WHERE vehiculos_disponibles.inventario_id = v_inventario_id
+    SELECT id
+    INTO @vehicle_id
+    FROM vehicles
+    WHERE model = v_model
+      AND type = v_type
+      AND color = v_color
+      AND doors = v_doors
+      AND capacity = v_capacity
+      AND convertible = v_convertible
+      AND motor = v_motor
+      AND day_price = v_day_price
+      AND week_price = v_week_price
     LIMIT 1;
-    INSERT INTO alquileres (clientes_id,
-                            empleados_id,
-                            sucursal_salida,
-                            inventario_id,
-                            fecha_salida,
-                            fecha_llegada_esperada,
-                            precio_semana_final,
-                            precio_dia_final,
-                            semanas_alquilado,
-                            dias_alquilado,
-                            valor_cotizado)
-    VALUES (v_id_cliente,
-            @id_empleado,
-            @id_sucursal,
-            @id_inventario,
-            @ahora,
-            ADDDATE(@ahora, INTERVAL (v_numero_semanas * 7) + v_numero_dias DAY),
-            @semana_final,
-            @dia_final,
-            v_numero_semanas,
-            v_numero_dias,
-            @semana_final * v_numero_semanas + @dia_final * v_numero_dias);
-    UPDATE inventario SET inventario.disponible = false WHERE inventario.id = @id_inventario;
+
+    INSERT INTO inventory (offices_id,
+                           vehicles_id,
+                           plate)
+    VALUES (v_office_id,
+            @vehicle_id,
+            v_plate);
 END;
 @@
 
-CREATE PROCEDURE recuperar_vehiculo(
-    IN v_placa VARCHAR(45),
-    IN v_sucursal_entrega INT,
-    IN v_valor_pagado FLOAT
+CREATE PROCEDURE rent_vehicle(
+    IN v_inventory_id INT,
+    IN v_client_id INT,
+    IN v_days_rented INT,
+    IN v_weeks_rented INT
 )
 BEGIN
-    SELECT alquileres.id
-    INTO @id_alquiler
-    FROM alquileres,
-         inventario
-    WHERE
-      alquileres.inventario_id = inventario.id
-      AND inventario.placa = v_placa
-      AND alquileres.fecha_llegada IS NULL
+    SET @transaction_time = NOW();
+    -- Assign an employee to the rent to monitor it --
+    SELECT employees.id INTO @employee_id FROM employees ORDER BY RAND() LIMIT 1;
+    -- Capture the vehicle information
+    SELECT inventory_id,
+           office_id,
+           day_price,
+           week_price
+    INTO @inventory_id, @office_id, @final_day_price, @final_week_price
+    FROM available_vehicles
+    WHERE available_vehicles.inventory_id = v_inventory_id
     LIMIT 1;
-    SET @right_now = NOW();
-    IF @id_alquiler IS NOT NULL THEN
+    -- Rent the vehicle
+    INSERT INTO vehicle_rents (clients_id,
+                               employees_id,
+                               out_office,
+                               inventory_id,
+                               out_date,
+                               expected_in_date,
+                               final_day_price,
+                               final_week_price,
+                               days_rented,
+                               weeks_rented,
+                               expected_price)
+    VALUES (v_client_id,
+            @employee_id,
+            @office_id,
+            @inventory_id,
+            @transaction_time,
+            ADDDATE(@transaction_time, INTERVAL (v_weeks_rented * 7) + v_days_rented DAY),
+            @final_day_price,
+            @final_week_price,
+            v_days_rented,
+            v_weeks_rented,
+            @final_day_price * v_days_rented + @final_week_price * v_weeks_rented);
+END;
+@@
+
+CREATE PROCEDURE recover_vehicle(
+    IN v_plate VARCHAR(45),
+    IN v_in_office INT,
+    IN v_payment_amount FLOAT
+)
+BEGIN
+    -- Get the time of the transaction
+    SET @transaction_time = NOW();
+    -- Get the id of the rent
+    SELECT vehicle_rents.id
+    INTO @rent_id
+    FROM vehicle_rents,
+         inventory
+    WHERE vehicle_rents.inventory_id = inventory.id
+      AND inventory.plate = v_plate
+      AND vehicle_rents.in_date IS NULL
+    LIMIT 1;
+    -- -
+
+    IF @rent_id IS NOT NULL THEN
+        -- - Change the status of the rent
         UPDATE
-            inventario
-        SET inventario.disponible = true
-        WHERE inventario.placa = v_placa;
-        UPDATE
-            alquileres
-        SET alquileres.sucursal_entrega = v_sucursal_entrega,
-            alquileres.fecha_llegada    = @right_now,
-            alquileres.valor_pagado     = v_valor_pagado
-        WHERE alquileres.id = @id_alquiler;
+            vehicle_rents
+        SET vehicle_rents.in_office   = v_in_office,
+            vehicle_rents.in_date     = @transaction_time,
+            vehicle_rents.payed_price = v_payment_amount
+        WHERE vehicle_rents.id = @rent_id;
     END IF;
-END;
-@@
-
-
--- - Creacion de triggers - --
-
--- -- modelos_vehiculos -- --
-
-CREATE TRIGGER modelos_vehiculos_after_update
-    AFTER UPDATE
-    ON modelos_vehiculos
-    FOR EACH ROW
-BEGIN
-    IF OLD.valor != NEW.valor THEN
-        CALL actualizar_vehiculos_por_modelo(NEW.id);
-    END IF;
-END;
-@@
-
--- -- precio_puerta_constante -- --
-CREATE TRIGGER precio_puerta_constante_after_update
-    AFTER UPDATE
-    ON precio_puerta_constante
-    FOR EACH ROW
-BEGIN
-    CALL actualizar_vehiculos();
-END;
-@@
-
--- -- precio_capacidad_constante -- --
-CREATE TRIGGER precio_capacidad_constante_after_update
-    AFTER UPDATE
-    ON precio_capacidad_constante
-    FOR EACH ROW
-BEGIN
-    CALL actualizar_vehiculos();
-END;
-@@
-
--- -- precio_descapotable_constante -- --
-CREATE TRIGGER precio_descapotable_constante_after_update
-    AFTER UPDATE
-    ON precio_descapotable_constante
-    FOR EACH ROW
-BEGIN
-    CALL actualizar_vehiculos();
 END;
 @@
 
 DELIMITER ;
 
 
--- - Datos de inicializacion - --
+-- - Demo vehicles - --
 
-CALL registrar_vehiculo(
+CALL register_vehicle(
         'Nissan Versa 2016',
         'sedan',
         'rojo',
-        'SUB-527',
-        1000000,
         4,
-        5,
+        6,
         false,
-        'v8',
-        1
+        'V8',
+        200000,
+        1000000,
+        1,
+        'SUB-527'
     );
-CALL registrar_vehiculo(
+CALL register_vehicle(
         'Nissan Versa 2016',
         'sedan',
         'rojo',
-        'SUB-528',
-        1000000,
         4,
-        5,
+        6,
         false,
-        'v8',
-        2
+        'V8',
+        200000,
+        1000000,
+        1,
+        'SUB-528'
     );
-CALL registrar_vehiculo(
+CALL register_vehicle(
+        'Nissan Versa 2016',
+        'sedan',
+        'rojo',
+        4,
+        6,
+        false,
+        'V8',
+        200000,
+        1000000,
+        1,
+        'SUB-529'
+    );
+
+CALL register_vehicle(
+        'Nissan Versa 2016',
+        'sedan',
+        'gris',
+        4,
+        6,
+        false,
+        'V8',
+        200000,
+        1000000,
+        1,
+        'SUB-530'
+    );
+
+CALL register_vehicle(
+        'Nissan Versa 2016',
+        'sedan',
+        'gris',
+        4,
+        6,
+        false,
+        'V8',
+        200000,
+        1000000,
+        1,
+        'SUB-531'
+    );
+
+CALL register_vehicle(
         'Nissan Versa 2020',
         'sedan',
-        'rojo',
-        'SUB-529',
-        1000000,
+        'gris',
         4,
-        5,
+        6,
         false,
-        'v8',
-        3
+        'V8',
+        200000,
+        1000000,
+        1,
+        'SUB-532'
     );
