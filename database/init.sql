@@ -1,6 +1,6 @@
-DROP DATABASE upb_rental;
-CREATE DATABASE upb_rental;
-USE upb_rental;
+-- - DROP DATABASE upb_rental;
+-- - CREATE DATABASE upb_rental;
+-- - USE upb_rental;
 
 -- -- Employees -- --
 CREATE TABLE IF NOT EXISTS employees
