@@ -328,13 +328,13 @@ CREATE PROCEDURE
 )
 BEGIN
     SET @password_salt = salt();
-    INSERT IGNORE INTO clients (personal_id,
-                                complete_name,
-                                address,
-                                phone_number,
-                                email,
-                                password_hash,
-                                password_salt)
+    INSERT INTO clients (personal_id,
+                         complete_name,
+                         address,
+                         phone_number,
+                         email,
+                         password_hash,
+                         password_salt)
     VALUES (v_personal_id,
             v_complete_name,
             v_address,
