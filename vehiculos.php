@@ -32,15 +32,14 @@ include_once "database.php";
             <th scope="col">Placa</th>
             <th scope="col">Ciudad</th>
             <th scope="col">Modelo</th>
-            <th scope="col">Nombre</th>
+            <th scope="col">Tipo</th>
             <th scope="col">Color</th>
-            <th scope="col">Precio</th>
+            <th scope="col">Precio dia</th>
+            <th scope="col">Precio semana</th>
             <th scope="col">Puertas</th>
             <th scope="col">Capacidad</th>
             <th scope="col">Descapotable</th>
             <th scope="col">Motor</th>
-            <th scope="col">Precio_Semana</th>
-            <th scope="col">Precio_dia</th>
             <th scope="col">Alquilar</th>
         </tr>
     </thead>
@@ -51,19 +50,18 @@ include_once "database.php";
         foreach ($vehicles as $vehicle) {
             echo "
             <tr>
-                <td>$vehicle->placa</td>
-                <td>$vehicle->ciudad</td>
-                <td>$vehicle->modelo_id</td>
-                <td>$vehicle->nombre</td>
-                <td>$vehicle->color_id</td>
-                <td>$vehicle->precio_referencia</td>
-                <td>$vehicle->puertas</td>
-                <td>$vehicle->capacidad</td>
-                <td>$vehicle->descapotable</td>
+                <td>$vehicle->plate</td>
+                <td>$vehicle->city</td>
+                <td>$vehicle->model</td>
+                <td>$vehicle->type</td>
+                <td>$vehicle->color</td>
+                <td>$vehicle->day_price</td>
+                <td>$vehicle->week_price</td>
+                <td>$vehicle->doors</td>
+                <td>$vehicle->capacity</td>
+                <td>$vehicle->convertible</td>
                 <td>$vehicle->motor</td>
-                <td>$vehicle->precio_semana</td>
-                <td>$vehicle->precio_dia</td>
-                <td><a href='/alquilar_auto.php?id=$vehicle->inventario_id' class='blue-button'>Alquilar</td>
+                <td><a href='/alquilar_auto.php?id=$vehicle->inventory_id' class='blue-button'>Alquilar</td>
             </tr>";
         }
     }

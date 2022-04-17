@@ -18,10 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } else if (isset($_POST["register"])) {
         $user_id = register_client(
-            $_POST["ciudad_residencia"],
             $_POST["cedula"],
-            $_POST["nombres"],
-            $_POST["apellidos"],
+            $_POST["nombres"] . ' ' . $_POST["apellidos"],
             $_POST["direccion"],
             $_POST["telefono"],
             $_POST["correo"],

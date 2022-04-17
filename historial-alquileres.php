@@ -35,7 +35,9 @@ include_once "database.php";
     <thead class="thead-dark">
     <tr>
         <th scope="col">Sucursal de salida</th>
-        <th scope="col">Nombre del vehiculo</th>
+        <th scope="col">Placa</th>
+        <th scope="col">Tipo vehiculo</th>
+        <th scope="col">Modelo vehiculo</th>
         <th scope="col">Fecha de salida</th>
         <th scope="col">Dias alquilado</th>
         <th scope="col">Semanas alquilado</th>
@@ -47,15 +49,20 @@ include_once "database.php";
     $rents = current_rents($_SESSION["id"]);
     if (count($rents) > 0) {
         foreach ($rents as $rent) {
-            $salida = get_sucursal_city($rent->sucursal_salida);
+            $out_office = get_office_city($rent->out_office);
+            $out_date = $rent->out_date->format("Y-m-d H:i:s");
+            $plate = $rent->vehicle->plate;
+            $model = $rent->vehicle->model;
             echo "
             <tr>
-                <td>$salida</td>
-                <td>$rent->nombre_vehiculo</td>
-                <td>$rent->fecha_salida</td>
-                <td>$rent->dias_alquilado</td>
-                <td>$rent->semanas_alquilado</td>
-                <td>$rent->valor_cotizado</td>
+                <td>$out_office</td>
+                <td>$plate</td>
+                <td>$rent->type</td>
+                <td>$model</td>
+                <td>$out_date</td>
+                <td>$rent->days_rented</td>
+                <td>$rent->weeks_rented</td>
+                <td>$rent->expected_price</td>
             </tr>";
         }
     }
@@ -70,7 +77,9 @@ include_once "database.php";
     <tr>
         <th scope="col">Sucursal de salida</th>
         <th scope="col">Sucursal de llegada</th>
-        <th scope="col">Nombre del vehiculo</th>
+        <th scope="col">Placa</th>
+        <th scope="col">Tipo vehiculo</th>
+        <th scope="col">Modelo vehiculo</th>
         <th scope="col">Fecha de salida</th>
         <th scope="col">Fecha de llegada</th>
         <th scope="col">Dias alquilado</th>
@@ -83,18 +92,24 @@ include_once "database.php";
     $rents = old_rents($_SESSION["id"]);
     if (count($rents) > 0) {
         foreach ($rents as $rent) {
-            $salida = get_sucursal_city($rent->sucursal_salida);
-            $entrega = get_sucursal_city($rent->sucursal_entrega);
+            $out_office = get_office_city($rent->out_office);
+            $in_office = get_office_city($rent->in_office);
+            $out_date = $rent->out_date->format("Y-m-d H:i:s");
+            $in_date = $rent->in_date->format("Y-m-d H:i:s");
+            $plate = $rent->vehicle->plate;
+            $model = $rent->vehicle->model;
             echo "
             <tr>
-                <td>$salida</td>
-                <td>$entrega</td>
-                <td>$rent->nombre_vehiculo</td>
-                <td>$rent->fecha_salida</td>
-                <td>$rent->fecha_llegada</td>
-                <td>$rent->dias_alquilado</td>
-                <td>$rent->semanas_alquilado</td>
-                <td>$rent->valor_pagado</td>
+                <td>$out_office</td>
+                <td>$in_office</td>
+                <td>$plate</td>
+                <td>$rent->type</td>
+                <td>$model</td>
+                <td>$out_date</td>
+                <td>$in_date</td>
+                <td>$rent->days_rented</td>
+                <td>$rent->weeks_rented</td>
+                <td>$rent->payed_price</td>
             </tr>";
         }
     }

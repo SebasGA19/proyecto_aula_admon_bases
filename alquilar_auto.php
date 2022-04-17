@@ -3,7 +3,7 @@ include_once "nav_bar.php";
 include_once "database.php";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (rent_vehicle($_GET["id"], $_SESSION["id"], $_POST["numero_semanas"], $_POST["numero_dias"])) {
+    if (rent_vehicle($_GET["id"], $_SESSION["id"], $_POST["numero_dias"], $_POST["numero_semanas"])) {
         js_redirect("/vehiculos.php");
     } else {
         echo ":(";
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-inner">
                <form class="login" method="post">
                   <div class="field">
-                     <input type="number" min="1" placeholder="Cantidad de semanas" name="numero_semanas" required>
+                     <input type="number" min="0" placeholder="Cantidad de semanas" name="numero_semanas" required>
                   </div>
                   <div class="field">
                      <input type="number" min="0" placeholder="Cantidad de dias" name="numero_dias" required>

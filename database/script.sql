@@ -236,7 +236,7 @@ CREATE TRIGGER after_insert_vehicle_rent
 BEGIN
     UPDATE inventory
     SET inventory.available = false
-    WHERE inventory.vehicles_id = NEW.inventory_id;
+    WHERE inventory.id = NEW.inventory_id;
 END;
 @@
 
@@ -248,7 +248,7 @@ BEGIN
     IF OLD.in_date IS NULL AND NEW.in_date IS NOT NULL THEN
         UPDATE inventory
         SET inventory.available = true
-        WHERE inventory.vehicles_id = NEW.inventory_id;
+        WHERE inventory.id = NEW.inventory_id;
     END IF;
 END;
 @@
@@ -437,11 +437,10 @@ BEGIN
     -- Assign an employee to the rent to monitor it --
     SELECT employees.id INTO @employee_id FROM employees ORDER BY RAND() LIMIT 1;
     -- Capture the vehicle information
-    SELECT inventory_id,
-           office_id,
+    SELECT office_id,
            day_price,
            week_price
-    INTO @inventory_id, @office_id, @final_day_price, @final_week_price
+    INTO @office_id, @final_day_price, @final_week_price
     FROM available_vehicles
     WHERE available_vehicles.inventory_id = v_inventory_id
     LIMIT 1;
@@ -460,7 +459,7 @@ BEGIN
     VALUES (v_client_id,
             @employee_id,
             @office_id,
-            @inventory_id,
+            v_inventory_id,
             @transaction_time,
             ADDDATE(@transaction_time, INTERVAL (v_weeks_rented * 7) + v_days_rented DAY),
             @final_day_price,

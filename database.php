@@ -1,201 +1,258 @@
 <?php
 
+use JetBrains\PhpStorm\NoReturn;
+
 session_start();
 
-function js_redirect(string $target_url)
+#[NoReturn] function js_redirect(string $target_url)
 {
     echo "<script>window.location.href = '$target_url'</script>";
     exit;
 }
 
-function salt(): string
-{
-    return "AntonioJuanSebastian";
-}
-
 function connect(): PDO
 {
-    $database_host = "172.30.242.24:3306";
-    $database = "laboratorio_3";
-    $database_username = "root";
-    $database_password = "password";
+    $database_host = getenv("DB_HOST");
+    $database = getenv("DB_SCHEMA");
+    $database_username = getenv("DB_USER");
+    $database_password = getenv("DB_PASSWORD");
 
     return new PDO("mysql:host=$database_host;dbname=$database;", $database_username, $database_password);
 }
 
 function rent_vehicle(
-    int   $inventario_id,
-    int   $id_cliente,
-    float $numero_semanas,
-    float $numero_dias,
+    int $inventory_id,
+    int $client_id,
+    int $days_rented,
+    int $weeks_rented,
 ): bool
 {
     try {
-        $records = connect()->prepare('CALL alquilar_vehiculo(:inventario_id, :id_cliente, :numero_semanas, :numero_dias)');
-        $records->bindParam(':inventario_id', $inventario_id);
-        $records->bindParam(':id_cliente', $id_cliente);
-        $records->bindParam(':numero_semanas', $numero_semanas);
-        $records->bindParam(':numero_dias', $numero_dias);
+        $records = connect()->prepare('CALL rent_vehicle(:inventory_id, :client_id, :days_rented, :weeks_rented)');
+        $records->bindParam(':inventory_id', $inventory_id);
+        $records->bindParam(':client_id', $client_id);
+        $records->bindParam(':days_rented', $days_rented);
+        $records->bindParam(':weeks_rented', $weeks_rented);
         $records->execute();
         return true;
     } catch (Exception $e) {
-        echo $e;
     }
     return false;
 }
 
-class Vehiculo
+class Vehicle
 {
-    public ?int $inventario_id = null;
-    public ?int $sucursales_id = null;
-    public ?string $ciudad = null;
-    public ?int $vehiculos_id = null;
-    public ?string $placa = null;
-    public ?int $modelo_id = null;
-    public ?string $nombre = null;
-    public ?int $color_id = null;
-    public ?float $precio_referencia = null;
-    public ?string $puertas = null;
-    public ?string $capacidad = null;
-    public ?string $descapotable = null;
-    public ?string $motor = null;
-    public ?float $precio_semana = null;
-    public ?float $precio_dia = null;
+    public int $inventory_id;
+    public int $office_id;
+    public string $city;
+    public int $vehicle_id;
+    public string $plate;
+    public string $model;
+    public string $type;
+    public string $color;
+    public string $doors;
+    public string $capacity;
+    public string $convertible;
+    public string $motor;
+    public int $day_price;
+    public int $week_price;
 
     public function __construct(
-        ?int    $inventario_id,
-        ?int    $sucursales_id,
-        ?string $ciudad,
-        ?int    $vehiculos_id,
-        ?string $placa,
-        ?int    $modelo_id,
-        ?string $nombre,
-        ?int    $color_id,
-        ?float  $precio_referencia,
-        ?string $puertas,
-        ?string $capacidad,
-        ?string $descapotable,
-        ?string $motor,
-        ?float  $precio_semana,
-        ?float  $precio_dia
+        int    $v_inventory_id,
+        int    $v_office_id,
+        string $v_city,
+        int    $v_vehicle_id,
+        string $v_plate,
+        string $v_model,
+        string $v_type,
+        string $v_color,
+        string $v_doors,
+        string $v_capacity,
+        string $v_convertible,
+        string $v_motor,
+        int    $v_day_price,
+        int    $v_week_price
     )
     {
-        $this->inventario_id = $inventario_id;
-        $this->sucursales_id = $sucursales_id;
-        $this->ciudad = $ciudad;
-        $this->vehiculos_id = $vehiculos_id;
-        $this->placa = $placa;
-        $this->modelo_id = $modelo_id;
-        $this->nombre = $nombre;
-        $this->color_id = $color_id;
-        $this->precio_referencia = $precio_referencia;
-        $this->puertas = $puertas;
-        $this->capacidad = $capacidad;
-        $this->descapotable = $descapotable;
-        $this->motor = $motor;
-        $this->precio_semana = $precio_semana;
-        $this->precio_dia = $precio_dia;
+        $this->inventory_id = $v_inventory_id;
+        $this->office_id = $v_office_id;
+        $this->city = $v_city;
+        $this->vehicle_id = $v_vehicle_id;
+        $this->plate = $v_plate;
+        $this->model = $v_model;
+        $this->type = $v_type;
+        $this->color = $v_color;
+        $this->doors = $v_doors;
+        $this->capacity = $v_capacity;
+        $this->convertible = $v_convertible;
+        $this->motor = $v_motor;
+        $this->day_price = $v_day_price;
+        $this->week_price = $v_week_price;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public static function loadFromId(
+        int $id
+    ): Vehicle
+    {
+        $records = connect()->prepare('
+SELECT
+    inventory.id AS inventory_id,
+    inventory.offices_id AS office_id,
+    offices.city AS city,
+    inventory.vehicles_id AS vehicle_id,
+    inventory.plate AS plate,
+    vehicles.model AS model,
+    vehicles.type AS type,
+    vehicles.color AS color,
+    vehicles.doors AS doors,
+    vehicles.capacity AS capacity,
+    vehicles.convertible AS convertible,
+    vehicles.motor AS motor,
+    vehicles.day_price AS day_price,
+    vehicles.week_price AS week_price
+FROM
+    inventory,
+    vehicles,
+    offices
+WHERE inventory.id = :id
+    AND inventory.vehicles_id = vehicles.id
+    AND inventory.offices_id = offices.id
+LIMIT 1');
+        $records->bindParam(':id', $id);
+        $records->execute();
+        $results = $records->fetch(PDO::FETCH_ASSOC);
+        if ($results) {
+            return new Vehicle(
+                $results["inventory_id"],
+                $results["office_id"],
+                $results["city"],
+                $results["vehicle_id"],
+                $results["plate"],
+                $results["model"],
+                $results["type"],
+                $results["color"],
+                $results["doors"],
+                $results["capacity"],
+                $results["convertible"],
+                $results["motor"],
+                $results["day_price"],
+                $results["week_price"]
+            );
+        } else {
+            throw new Exception("Inventory entry not found");
+        }
     }
 }
 
 class Rent
 {
-    public ?int $id = null;
-    public ?int $clientes_id = null;
-    public ?int $empleados_id = null;
-    public ?int $sucursal_salida = null;
-    public ?int $sucursal_entrega = null;
-    public ?int $inventario_id = null;
-    public ?string $nombre_vehiculo = null;
-    public ?string $fecha_salida = null;
-    public ?string $fecha_llegada_esperada = null;
-    public ?string $fecha_llegada = null;
-    public ?float $precio_semana_final = null;
-    public ?float $precio_dia_final = null;
-    public ?int $semanas_alquilado = null;
-    public ?float $dias_alquilado = null;
-    public ?float $valor_cotizado = null;
-    public ?float $valor_pagado = null;
+    public int $id;
+    public int $clients_id;
+    public int $employees_id;
+    public int $out_office;
+    public int $in_office;
+    public int $inventory_id;
+    public Vehicle $vehicle;
+    public string $type;
+    public DateTime $out_date;
+    public DateTime $expected_in_date;
+    public DateTime $in_date;
+    public int $final_day_price;
+    public int $final_week_price;
+    public int $days_rented;
+    public int $weeks_rented;
+    public int $expected_price;
+    public int $payed_price;
 
+    /**
+     * @throws Exception
+     */
     public function __construct(
-        int    $id,
-        int    $clientes_id,
-        int    $empleados_id,
-        int    $sucursal_salida,
-        int    $sucursal_entrega,
-        int    $inventario_id,
-        string $nombre_vehiculo,
-        string $fecha_salida,
-        string $fecha_llegada_esperada,
-        string $fecha_llegada,
-        float  $precio_semana_final,
-        float  $precio_dia_final,
-        int    $semanas_alquilado,
-        float  $dias_alquilado,
-        float  $valor_cotizado,
-        float  $valor_pagado
+        int      $id,
+        int      $clients_id,
+        int      $employees_id,
+        int      $out_office,
+        int      $in_office,
+        int      $inventory_id,
+        string   $type,
+        DateTime $out_date,
+        DateTime $expected_in_date,
+        DateTime $in_date,
+        int      $final_day_price,
+        int      $final_week_price,
+        int      $days_rented,
+        int      $weeks_rented,
+        int      $expected_price,
+        int      $payed_price
     )
     {
         $this->id = $id;
-        $this->clientes_id = $clientes_id;
-        $this->empleados_id = $empleados_id;
-        $this->sucursal_salida = $sucursal_salida;
-        $this->sucursal_entrega = $sucursal_entrega;
-        $this->inventario_id = $inventario_id;
-        $this->nombre_vehiculo = $nombre_vehiculo;
-        $this->fecha_salida = $fecha_salida;
-        $this->fecha_llegada_esperada = $fecha_llegada_esperada;
-        $this->fecha_llegada = $fecha_llegada;
-        $this->precio_semana_final = $precio_semana_final;
-        $this->precio_dia_final = $precio_dia_final;
-        $this->semanas_alquilado = $semanas_alquilado;
-        $this->dias_alquilado = $dias_alquilado;
-        $this->valor_cotizado = $valor_cotizado;
-        $this->valor_pagado = $valor_pagado;
+        $this->clients_id = $clients_id;
+        $this->employees_id = $employees_id;
+        $this->out_office = $out_office;
+        $this->in_office = $in_office;
+        $this->inventory_id = $inventory_id;
+        $this->vehicle = Vehicle::loadFromId($inventory_id);
+        $this->type = $type;
+        $this->out_date = $out_date;
+        $this->expected_in_date = $expected_in_date;
+        $this->in_date = $in_date;
+        $this->final_day_price = $final_day_price;
+        $this->final_week_price = $final_week_price;
+        $this->days_rented = $days_rented;
+        $this->weeks_rented = $weeks_rented;
+        $this->expected_price = $expected_price;
+        $this->payed_price = $payed_price;
     }
 }
 
-function get_sucursal_city(int $id): ?string
+function get_office_city(int $id): ?string
 {
-    $records = connect()->prepare('SELECT ciudad FROM sucursales WHERE id = :id');
+    $records = connect()->prepare('SELECT city FROM offices WHERE id = :id');
     $records->bindParam(':id', $id);
     $records->execute();
     $results = $records->fetch(PDO::FETCH_ASSOC);
     if (count($results) > 0) {
-        return $results["ciudad"];
+        return $results["city"];
     }
     return null;
 }
 
+/**
+ * @return Rent[]
+ */
 function current_rents(int $user_id): array
 {
     $products = array();
     try {
         $records = connect()->prepare('
-SELECT alquileres.id AS id,
-       clientes_id,
-       empleados_id,
-       sucursal_salida,
-       sucursal_entrega,
-       inventario_id,
-       vehiculos.nombre AS nombre_vehiculo,
-       fecha_salida,
-       fecha_llegada_esperada,
-       fecha_llegada,
-       precio_semana_final,
-       precio_dia_final,
-       semanas_alquilado,
-       dias_alquilado,
-       valor_cotizado,
-       valor_pagado
-FROM alquileres,
-     vehiculos,
-     inventario
+SELECT vehicle_rents.id AS vehicle_rents_id,
+       vehicle_rents.clients_id AS clients_id,
+       vehicle_rents.employees_id AS employees_id,
+       vehicle_rents.out_office AS out_office,
+       vehicle_rents.out_office AS out_office,
+       vehicle_rents.inventory_id AS inventory_id,
+       vehicles.type AS type,
+       vehicle_rents.out_date AS out_date,
+       vehicle_rents.expected_in_date AS expected_in_date,
+       vehicle_rents.in_date AS in_date,
+       vehicle_rents.final_day_price AS final_day_price,
+       vehicle_rents.final_week_price AS final_week_price,
+       vehicle_rents.days_rented AS days_rented,
+       vehicle_rents.weeks_rented AS weeks_rented,
+       vehicle_rents.expected_price AS expected_price,
+       vehicle_rents.payed_price AS payed_price
+FROM vehicle_rents,
+     vehicles,
+     inventory
 WHERE
-    fecha_llegada IS NULL
-    AND inventario.id = alquileres.inventario_id
-    AND vehiculos.id = inventario.vehiculos_id
-    AND clientes_id = :user_id');
+    vehicle_rents.in_date IS NULL
+    AND inventory.id = vehicle_rents.inventory_id
+    AND vehicles.id = inventory.vehicles_id
+    AND vehicle_rents.clients_id = :user_id');
         $records->bindParam(":user_id", $user_id);
         $records->execute();
         while ($row = $records->fetch(PDO::FETCH_ASSOC)) {
@@ -203,22 +260,22 @@ WHERE
                 break;
             }
             $products[] = new Rent(
-                $row["id"],
-                $row["clientes_id"],
-                $row["empleados_id"],
-                $row["sucursal_salida"],
-                -1,
-                $row["inventario_id"],
-                $row["nombre_vehiculo"],
-                $row["fecha_salida"],
-                $row["fecha_llegada_esperada"],
-                "NUNCA",
-                $row["precio_semana_final"],
-                $row["precio_dia_final"],
-                $row["semanas_alquilado"],
-                $row["dias_alquilado"],
-                $row["valor_cotizado"],
-                0,
+                $row["vehicle_rents_id"],
+                $row["clients_id"],
+                $row["employees_id"],
+                $row["out_office"],
+                $row["out_office"],
+                $row["inventory_id"],
+                $row["type"],
+                DateTime::createFromFormat('Y-m-d H:i:s', $row["out_date"]),
+                DateTime::createFromFormat('Y-m-d H:i:s', $row["expected_in_date"]),
+                DateTime::createFromFormat('Y-m-d H:i:s', "2000-12-12 12:12:12"),
+                $row["final_day_price"],
+                $row["final_week_price"],
+                $row["days_rented"],
+                $row["weeks_rented"],
+                $row["expected_price"],
+                0
             );
         }
     } catch (Exception $e) {
@@ -226,6 +283,9 @@ WHERE
     return $products;
 }
 
+/**
+ * @return Rent[]
+ */
 function old_rents(int $user_id): array
 {
     $products = array();
@@ -233,26 +293,25 @@ function old_rents(int $user_id): array
         $records = connect()->prepare('
 SELECT
     id,
-    clientes_id,
-    empleados_id,
-    sucursal_salida,
-    sucursal_entrega,
-    sucursal_entrega,
-    inventario_id,
-    nombre_vehiculo,
-    fecha_salida,
-    fecha_llegada_esperada,
-    fecha_llegada,
-    precio_semana_final,
-    precio_dia_final,
-    semanas_alquilado,
-    dias_alquilado,
-    valor_cotizado,
-    valor_pagado
+    clients_id,
+    employees_id,
+    out_office,
+    in_office,
+    inventory_id,
+    type,
+    out_date,
+    expected_in_date,
+    in_date,
+    final_day_price,
+    final_week_price,
+    days_rented,
+    weeks_rented,
+    expected_price,
+    payed_price
 FROM
-    historial_de_alquileres
+    completed_rents
 WHERE
-      clientes_id = :user_id');
+      clients_id = :user_id');
         $records->bindParam(":user_id", $user_id);
         $records->execute();
         while ($row = $records->fetch(PDO::FETCH_ASSOC)) {
@@ -261,21 +320,21 @@ WHERE
             }
             $products[] = new Rent(
                 $row["id"],
-                $row["clientes_id"],
-                $row["empleados_id"],
-                $row["sucursal_salida"],
-                $row["sucursal_entrega"],
-                $row["inventario_id"],
-                $row["nombre_vehiculo"],
-                $row["fecha_salida"],
-                $row["fecha_llegada_esperada"],
-                $row["fecha_llegada"],
-                $row["precio_semana_final"],
-                $row["precio_dia_final"],
-                $row["semanas_alquilado"],
-                $row["dias_alquilado"],
-                $row["valor_cotizado"],
-                $row["valor_pagado"]
+                $row["clients_id"],
+                $row["employees_id"],
+                $row["out_office"],
+                $row["in_office"],
+                $row["inventory_id"],
+                $row["type"],
+                DateTime::createFromFormat('Y-m-d H:i:s', $row["out_date"]),
+                DateTime::createFromFormat('Y-m-d H:i:s', $row["expected_in_date"]),
+                DateTime::createFromFormat('Y-m-d H:i:s', $row["in_date"]),
+                $row["final_day_price"],
+                $row["final_week_price"],
+                $row["days_rented"],
+                $row["weeks_rented"],
+                $row["expected_price"],
+                $row["payed_price"]
             );
         }
     } catch (Exception $e) {
@@ -283,50 +342,51 @@ WHERE
     return $products;
 }
 
+/**
+ * @return Vehicle[]
+ */
 function available_vehicles(): array
 {
     $products = array();
     try {
         $records = connect()->prepare('
 SELECT
-    inventario_id,
-    sucursales_id,
-    ciudad,
-    vehiculos_id,
-    placa,
-    modelo_id,
-    nombre,
-    color_id,
-    precio_referencia,
-    puertas,
-    capacidad,
-    descapotable,
+    inventory_id,
+    office_id,
+    city,
+    vehicle_id,
+    plate,
+    model,
+    type,
+    color,
+    doors,
+    capacity,
+    convertible,
     motor,
-    precio_semana,
-    precio_dia
+    day_price,
+    week_price
 FROM
-    vehiculos_disponibles');
+    available_vehicles');
         $records->execute();
         while ($row = $records->fetch(PDO::FETCH_ASSOC)) {
             if (count($row) === 0) {
                 break;
             }
-            $products[] = new Vehiculo(
-                $row["inventario_id"],
-                $row["sucursales_id"],
-                $row["ciudad"],
-                $row["vehiculos_id"],
-                $row["placa"],
-                $row["modelo_id"],
-                $row["nombre"],
-                $row["color_id"],
-                $row["precio_referencia"],
-                $row["puertas"],
-                $row["capacidad"],
-                $row["descapotable"],
+            $products[] = new Vehicle(
+                $row["inventory_id"],
+                $row["office_id"],
+                $row["city"],
+                $row["vehicle_id"],
+                $row["plate"],
+                $row["model"],
+                $row["type"],
+                $row["color"],
+                $row["doors"],
+                $row["capacity"],
+                $row["convertible"],
                 $row["motor"],
-                $row["precio_semana"],
-                $row["precio_dia"]
+                $row["day_price"],
+                $row["week_price"]
             );
         }
     } catch (Exception $e) {
@@ -335,31 +395,26 @@ FROM
 }
 
 function register_client(
-    string $ciudad_residencia,
-    string $cedula,
-    string $nombres,
-    string $apellidos,
-    string $direccion,
-    string $telefono_celular,
-    string $correo,
-    string $contrasena,
+    string $personal_id,
+    string $complete_name,
+    string $address,
+    string $phone_number,
+    string $email,
+    string $password,
     string $confirm_password
 ): bool
 {
-    if ($contrasena !== $confirm_password) {
+    if ($password !== $confirm_password) {
         return false;
     }
     try {
-        $records = connect()->prepare('CALL registrar_cliente(:ciudad_residencia, :cedula, :nombres, :apellidos, :direccion, :telefono_celular, :correo, :contrasena)');
-        $records->bindParam(':ciudad_residencia', $ciudad_residencia);
-        $records->bindParam(':cedula', $cedula);
-        $records->bindParam(':nombres', $nombres);
-        $records->bindParam(':apellidos', $apellidos);
-        $records->bindParam(':direccion', $direccion);
-        $records->bindParam(':telefono_celular', $telefono_celular);
-        $records->bindParam(':correo', $correo);
-        $password_hash = crypt($contrasena, salt());
-        $records->bindParam(':contrasena', $password_hash);
+        $records = connect()->prepare('CALL register_client( :personal_id, :complete_name, :address, :phone_number, :email, :password);');
+        $records->bindParam(':personal_id', $personal_id);
+        $records->bindParam(':complete_name', $complete_name);
+        $records->bindParam(':address', $address);
+        $records->bindParam(':phone_number', $phone_number);
+        $records->bindParam(':email', $email);
+        $records->bindParam(':password', $password);
         $records->execute();
         return true;
     } catch (Exception $e) {
@@ -369,10 +424,9 @@ function register_client(
 
 function login(string $username, string $password): ?int
 {
-    $crypt_password = crypt($password, salt());
-    $records = connect()->prepare('SELECT login_cliente(:username, :crypt_password) AS user_id');
+    $records = connect()->prepare('SELECT client_login(:username, :password) AS user_id');
     $records->bindParam(':username', $username);
-    $records->bindParam(':crypt_password', $crypt_password);
+    $records->bindParam(':password', $password);
     $records->execute();
     $results = $records->fetch(PDO::FETCH_ASSOC);
     if (count($results) > 0) {
@@ -383,7 +437,7 @@ function login(string $username, string $password): ?int
 
 function exists(int $user_id): bool
 {
-    $records = connect()->prepare('SELECT id FROM clientes WHERE id = :user_id');
+    $records = connect()->prepare('SELECT id FROM clients WHERE id = :user_id');
     $records->bindParam(':user_id', $user_id);
     $records->execute();
     $results = $records->fetch(PDO::FETCH_ASSOC);
