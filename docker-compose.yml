@@ -5,6 +5,7 @@ networks:
 services:
   upb-rental-web:
     build:
+      context: .
       dockerfile: web.Dockerfile
     image: upb-rental-web
     container_name: upb-rental-web
