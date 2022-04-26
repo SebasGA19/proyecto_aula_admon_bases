@@ -278,6 +278,29 @@ WHERE inventory.vehicles_id = vehicles.id
   AND inventory.available
   AND inventory.offices_id = offices.id;
 
+CREATE VIEW incomplete_rents AS
+SELECT vehicle_rents.id               AS vehicle_rents_id,
+       vehicle_rents.clients_id       AS clients_id,
+       vehicle_rents.employees_id     AS employees_id,
+       vehicle_rents.out_office       AS out_office,
+       vehicle_rents.inventory_id     AS inventory_id,
+       vehicles.type                  AS type,
+       vehicle_rents.out_date         AS out_date,
+       vehicle_rents.expected_in_date AS expected_in_date,
+       vehicle_rents.in_date          AS in_date,
+       vehicle_rents.final_day_price  AS final_day_price,
+       vehicle_rents.final_week_price AS final_week_price,
+       vehicle_rents.days_rented      AS days_rented,
+       vehicle_rents.weeks_rented     AS weeks_rented,
+       vehicle_rents.expected_price   AS expected_price,
+       vehicle_rents.payed_price      AS payed_price
+FROM vehicle_rents,
+     vehicles,
+     inventory
+WHERE vehicle_rents.in_date IS NULL
+  AND inventory.id = vehicle_rents.inventory_id
+  AND vehicles.id = inventory.vehicles_id;
+
 CREATE VIEW completed_rents AS
 SELECT vehicle_rents.id               AS id,
        vehicle_rents.clients_id       AS clients_id,

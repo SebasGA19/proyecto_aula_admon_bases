@@ -227,30 +227,24 @@ function current_rents(int $user_id): array
     $products = array();
     try {
         $records = connect()->prepare('
-SELECT vehicle_rents.id AS vehicle_rents_id,
-       vehicle_rents.clients_id AS clients_id,
-       vehicle_rents.employees_id AS employees_id,
-       vehicle_rents.out_office AS out_office,
-       vehicle_rents.out_office AS out_office,
-       vehicle_rents.inventory_id AS inventory_id,
-       vehicles.type AS type,
-       vehicle_rents.out_date AS out_date,
-       vehicle_rents.expected_in_date AS expected_in_date,
-       vehicle_rents.in_date AS in_date,
-       vehicle_rents.final_day_price AS final_day_price,
-       vehicle_rents.final_week_price AS final_week_price,
-       vehicle_rents.days_rented AS days_rented,
-       vehicle_rents.weeks_rented AS weeks_rented,
-       vehicle_rents.expected_price AS expected_price,
-       vehicle_rents.payed_price AS payed_price
-FROM vehicle_rents,
-     vehicles,
-     inventory
+SELECT vehicle_rents_id,
+       clients_id,
+       employees_id,
+       out_office,
+       inventory_id,
+       type,
+       out_date,
+       expected_in_date,
+       in_date,
+       final_day_price,
+       final_week_price,
+       days_rented,
+       weeks_rented,
+       expected_price,
+       payed_price
+FROM incomplete_rents
 WHERE
-    vehicle_rents.in_date IS NULL
-    AND inventory.id = vehicle_rents.inventory_id
-    AND vehicles.id = inventory.vehicles_id
-    AND vehicle_rents.clients_id = :user_id');
+    clients_id = :user_id');
         $records->bindParam(":user_id", $user_id);
         $records->execute();
         while ($row = $records->fetch(PDO::FETCH_ASSOC)) {
